@@ -1,0 +1,14 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /remind-push
+spring:
+  profiles:
+    active: dev
+  application:
+    name: zuji-remind-push-biz
+logging:
+  level:
+    root: info
+  file:
+    path: ./logs
