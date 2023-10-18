@@ -18,6 +18,9 @@ public class MemorialDayTaskVO {
     @Data
     public static class TaskVO implements Serializable {
         private static final long serialVersionUID = -8765735527549283442L;
+        
+        private Long id;
+
         /**
          * 事件类型:1=生日; 2=纪念日; 3=倒计时;
          */

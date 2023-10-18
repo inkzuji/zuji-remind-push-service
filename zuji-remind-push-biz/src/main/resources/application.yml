@@ -2,7 +2,12 @@ server:
   port: 8080
   servlet:
     context-path: /remind-push
+  # 设置关闭方式为优雅关闭
+  shutdown: graceful
 spring:
+  # 优雅停机最大等待时间
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
   profiles:
     active: dev
   application:
@@ -12,3 +17,4 @@ logging:
     root: info
   file:
     path: ./logs
+
