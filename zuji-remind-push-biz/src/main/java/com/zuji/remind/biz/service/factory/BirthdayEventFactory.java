@@ -1,15 +1,21 @@
 package com.zuji.remind.biz.service.factory;
 
 import cn.hutool.core.date.ChineseDate;
+import cn.hutool.core.util.StrUtil;
 import com.dingtalk.api.request.OapiRobotSendRequest;
+import com.zuji.remind.biz.entity.MsgPushWay;
 import com.zuji.remind.biz.enums.EventTypeEnum;
+import com.zuji.remind.biz.enums.RemindWayEnum;
+import com.zuji.remind.biz.model.bo.MailBO;
 import com.zuji.remind.biz.untils.DateUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static com.zuji.remind.common.constant.CommonConstant.ZERO_LONG;
 
@@ -19,24 +25,14 @@ import static com.zuji.remind.common.constant.CommonConstant.ZERO_LONG;
  * @author jianjun.wang@theone.art
  * @create 2023-09-12 21:41
  **/
+@Service
 public class BirthdayEventFactory extends AbstractEventFactory {
-    private final int dateType;
-    private final String memorialDate;
-    private final int isLeapMonth;
-    private final String remindTimes;
     private volatile long intervalDays;
     private volatile LocalDate nextBirthdayDate;
     private volatile ChineseDate nextBirthdayChineseDate;
 
-    public BirthdayEventFactory(int dateType, String memorialDate, int isLeapMonth, String remindTimes) {
-        this.dateType = dateType;
-        this.memorialDate = memorialDate;
-        this.isLeapMonth = isLeapMonth;
-        this.remindTimes = remindTimes;
-    }
-
     @Override
-    public boolean analyzeNotify() {
+    public boolean analyzeNotify(int dateType, String memorialDate, int isLeapMonth, String remindTimes) {
         AbstractDateFactory dateFactory = AbstractDateFactory.getInstance(dateType);
         ImmutablePair<LocalDate, ChineseDate> nextDatePair = dateFactory.analyzeNextNotifyDate(memorialDate, 1 == isLeapMonth);
         this.nextBirthdayDate = nextDatePair.getLeft();
@@ -49,14 +45,58 @@ public class BirthdayEventFactory extends AbstractEventFactory {
     }
 
     /**
+     * 发送消息
+     *
+     * @param remindWay 发送方式
+     * @param name      名称
+     * @param taskDesc  描述
+     */
+    @Override
+    public void sendMsg(Map<Integer, MsgPushWay> pushWayMap, String remindWay, String name, String taskDesc) {
+        for (String way : remindWay.split(StrUtil.COMMA)) {
+            RemindWayEnum remindWayEnum = RemindWayEnum.getByCode(Integer.parseInt(way));
+            switch (remindWayEnum) {
+                case EMAIL:
+                    super.sendEmail(this.getEmailBO(name, taskDesc), pushWayMap.get(RemindWayEnum.EMAIL.getCode()).getPushContext());
+                    break;
+                case DING_DING:
+                    super.sendDingDing(this.getDingDingMessageBody(name, taskDesc), pushWayMap.get(RemindWayEnum.DING_DING.getCode()).getPushContext());
+                    break;
+                case WECHAT:
+                    break;
+                default:
+                    throw new RuntimeException("暂不支持[" + way + "]方式");
+            }
+        }
+    }
+
+    private MailBO getEmailBO(String name, String taskDesc) {
+        StringBuffer bf = new StringBuffer();
+        bf.append("<html><h3>生日提醒</h3>");
+        bf.append("<p>生日:").append(name).append("</p>");
+        if (this.intervalDays > ZERO_LONG) {
+            bf.append(String.format("距离生日还有**%d**天！", this.intervalDays));
+        } else {
+            bf.append("<p>生日快乐！</p>");
+        }
+        if (StringUtils.isNotBlank(taskDesc)) {
+            bf.append("<p>").append(taskDesc).append("</p>");
+        }
+        bf.append("</html>");
+        MailBO bo = new MailBO();
+        bo.setSubject("生日提醒");
+        bo.setText(bf.toString());
+        return bo;
+    }
+
+    /**
      * 获取推送钉钉机器人消息体。
      *
      * @param name     任务名称
      * @param taskDesc 任务描述
      * @return {@link OapiRobotSendRequest}
      */
-    @Override
-    public OapiRobotSendRequest getDingDingMessageBody(String name, String taskDesc) {
+    private OapiRobotSendRequest getDingDingMessageBody(String name, String taskDesc) {
         List<Object> list = new ArrayList<>();
         list.add("### 生日提醒");
         list.add(String.format("**%s**", name));
@@ -77,18 +117,6 @@ public class BirthdayEventFactory extends AbstractEventFactory {
         sendRequest.setMsgtype("markdown");
         sendRequest.setMarkdown(markdown);
         return sendRequest;
-    }
-
-    @Override
-    public String toString() {
-        return "BirthdayFactory{" +
-                "dateType=" + dateType +
-                ", memorialDate='" + memorialDate + '\'' +
-                ", isLeapMonth=" + isLeapMonth +
-                ", remindTimes='" + remindTimes + '\'' +
-                ", intervalDays=" + intervalDays +
-                ", nextBirthday=" + nextBirthdayDate +
-                "} " + super.toString();
     }
 
     /**

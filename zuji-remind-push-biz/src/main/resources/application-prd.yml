@@ -26,13 +26,16 @@ spring:
     default-encoding: utf-8
     jndi-name: "mail/Session"
     properties:
+      "[mail.smtp.auth]": true
+      "[mail.smtp.ssl.enable]": true
+      "[mail.smtp.socketFactory]": javax.net.ssl.SSLSocketFactory
       "[mail.smtp.connectiontimeout]": 5000
-      "[mail.smtp.timeout]": 3000
+      "[mail.smtp.timeout]": 5000
       "[mail.smtp.writetimeout]": 5000
     host:
+    port:
     username:
     password:
-    port:
 custom:
   ding-ding-config:
     url: https://oapi.dingtalk.com/robot/send?access_token=

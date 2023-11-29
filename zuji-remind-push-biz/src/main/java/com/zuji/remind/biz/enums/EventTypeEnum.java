@@ -10,16 +10,18 @@ import lombok.Getter;
  **/
 @Getter
 public enum EventTypeEnum {
-    BIRTHDAY(1, "生日"),
-    ANNIVERSARY(2, "纪念日"),
-    COUNTDOWN(3, "倒计时");
+    BIRTHDAY(1, "生日", "birthdayEventFactory"),
+    ANNIVERSARY(2, "纪念日", "anniversaryEventFactory"),
+    COUNTDOWN(3, "倒计时", "countdownEventFactory");
 
     private final int code;
     private final String desc;
+    private final String factoryName;
 
-    EventTypeEnum(int code, String desc) {
+    EventTypeEnum(int code, String desc, String factoryName) {
         this.code = code;
         this.desc = desc;
+        this.factoryName = factoryName;
     }
 
     public static EventTypeEnum getByCode(int code) {

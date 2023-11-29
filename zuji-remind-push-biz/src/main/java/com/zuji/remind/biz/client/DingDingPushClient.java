@@ -4,7 +4,7 @@ import com.dingtalk.api.DefaultDingTalkClient;
 import com.dingtalk.api.DingTalkClient;
 import com.dingtalk.api.request.OapiRobotSendRequest;
 import com.dingtalk.api.response.OapiRobotSendResponse;
-import com.zuji.remind.biz.config.CommonConfig;
+import com.zuji.remind.biz.model.bo.MsgPushWayBO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tomcat.util.codec.binary.Base64;
@@ -26,25 +26,19 @@ import java.nio.charset.StandardCharsets;
 public class DingDingPushClient {
     private static final String DEFAULT_ALGORITHM = "HmacSHA256";
 
-    private final CommonConfig.DingDingConfig config;
-
-    public DingDingPushClient(CommonConfig config) {
-        this.config = config.getDingDingConfig();
-    }
-
     /**
      * 推送消息。
      *
      * @param requestBody 内容
      */
-    public void send(OapiRobotSendRequest requestBody) {
+    public void send(OapiRobotSendRequest requestBody, MsgPushWayBO.DingDingBO wayBO) {
         String url;
-        if (StringUtils.isBlank(config.getSecret())) {
-            url = String.format("%s%s", config.getUrl(), config.getAccessToken());
+        if (StringUtils.isBlank(wayBO.getSecret())) {
+            url = String.format("%s%s", wayBO.getUrl(), wayBO.getAccessToken());
         } else {
             long timestamp = System.currentTimeMillis();
-            String sign = this.generateSign(timestamp, config.getSecret());
-            url = String.format("%s%s&timestamp=%d&sign=%s", config.getUrl(), config.getAccessToken(), timestamp, sign);
+            String sign = this.generateSign(timestamp, wayBO.getSecret());
+            url = String.format("%s%s&timestamp=%d&sign=%s", wayBO.getUrl(), wayBO.getAccessToken(), timestamp, sign);
         }
         try {
             DingTalkClient client = new DefaultDingTalkClient(url);

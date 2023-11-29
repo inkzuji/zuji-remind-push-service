@@ -2,10 +2,11 @@ package com.zuji.remind.biz.scheduler;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.json.JSONUtil;
-import com.dingtalk.api.request.OapiRobotSendRequest;
-import com.zuji.remind.biz.client.DingDingPushClient;
 import com.zuji.remind.biz.entity.MemorialDayTask;
+import com.zuji.remind.biz.entity.MsgPushWay;
+import com.zuji.remind.biz.enums.EventTypeEnum;
 import com.zuji.remind.biz.service.db.MemorialDayTaskService;
+import com.zuji.remind.biz.service.db.MsgPushWayService;
 import com.zuji.remind.biz.service.factory.AbstractEventFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
@@ -13,6 +14,9 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * 纪念日定时任务.
@@ -24,15 +28,18 @@ import java.util.List;
 @Component
 public class AnniversaryScheduler {
     private final MemorialDayTaskService memorialDayTaskService;
-    private final DingDingPushClient dingDingPushClient;
+    private final MsgPushWayService msgPushWayService;
+    private final Map<String, AbstractEventFactory> abstractEventFactoryMap;
 
-    public AnniversaryScheduler(MemorialDayTaskService memorialDayTaskService, DingDingPushClient dingDingPushClient) {
+    public AnniversaryScheduler(MemorialDayTaskService memorialDayTaskService, MsgPushWayService msgPushWayService, Map<String, AbstractEventFactory> abstractEventFactoryMap) {
         this.memorialDayTaskService = memorialDayTaskService;
-        this.dingDingPushClient = dingDingPushClient;
+        this.msgPushWayService = msgPushWayService;
+        this.abstractEventFactoryMap = abstractEventFactoryMap;
     }
 
     @Async("commonThreadPoolExecutor")
-    @Scheduled(cron = "0 0 9 * * ?")
+    // @Scheduled(cron = "0 0 9 * * ?")
+    @Scheduled(cron = "0 0/1 * * * ?")
     public void task() {
         log.info("开始纪念日定时任务");
         List<MemorialDayTask> memorialDayTaskList = memorialDayTaskService.listAll();
@@ -40,13 +47,16 @@ public class AnniversaryScheduler {
             log.info("暂无数据");
             return;
         }
+        List<MsgPushWay> msgPushWayList = msgPushWayService.listAll();
+        Map<Integer, MsgPushWay> pushWayMap = msgPushWayList.stream()
+                .collect(Collectors.toMap(MsgPushWay::getPushType, Function.identity()));
         for (MemorialDayTask dayTask : memorialDayTaskList) {
-            this.dealWithData(dayTask);
+            this.dealWithData(dayTask, pushWayMap);
         }
         log.info("纪念日定时任务执行完成");
     }
 
-    private void dealWithData(MemorialDayTask task) {
+    private void dealWithData(MemorialDayTask task, Map<Integer, MsgPushWay> pushWayMap) {
         log.info("开始处理数据: task={}", JSONUtil.toJsonStr(task));
         int statusRemind = task.getStatusRemind();
         if (statusRemind == 0) {
@@ -55,15 +65,16 @@ public class AnniversaryScheduler {
         }
         String remindTimes = task.getRemindTimes();
 
-        AbstractEventFactory abstractEventFactory = AbstractEventFactory.getInstance(task.getEventType(), task.getDateType(), task.getMemorialDate(), task.getIsLeapMonth(), remindTimes);
-        boolean notifyResult = abstractEventFactory.analyzeNotify();
+        AbstractEventFactory abstractEventFactory = abstractEventFactoryMap.get(EventTypeEnum.getByCode(task.getEventType()).getFactoryName());
+        boolean notifyResult = abstractEventFactory.analyzeNotify(task.getDateType(),
+                task.getMemorialDate(),
+                task.getIsLeapMonth(),
+                remindTimes);
         log.info("处理结果返回值, notifyResult={}", notifyResult);
         if (!notifyResult) {
             log.info("未到推送通知时间, result = {}", abstractEventFactory);
             return;
         }
-        OapiRobotSendRequest sendRequest = abstractEventFactory.getDingDingMessageBody(task.getName(), task.getTaskDesc());
-        log.info("机器人消息: msg={}", JSONUtil.toJsonStr(sendRequest));
-        dingDingPushClient.send(sendRequest);
+        abstractEventFactory.sendMsg(pushWayMap, task.getRemindWay(), task.getName(), task.getTaskDesc());
     }
 }

@@ -1,8 +1,10 @@
 package com.zuji.remind.biz.client;
 
+import cn.hutool.json.JSONUtil;
 import com.zuji.remind.biz.model.bo.MailBO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.mail.MailProperties;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
@@ -23,7 +25,13 @@ import java.nio.charset.StandardCharsets;
 @Component
 @Slf4j
 public class EmailPushClient {
+    private MailProperties mailProperties;
     private JavaMailSender mailSender;
+
+    @Autowired
+    public void setMailProperties(MailProperties mailProperties) {
+        this.mailProperties = mailProperties;
+    }
 
     @Autowired
     public void setMailSender(JavaMailSender mailSender) {
@@ -34,11 +42,12 @@ public class EmailPushClient {
      * 发送邮件。
      */
     public void sendMessage(MailBO bo) {
+        log.info("发送邮件入参: {}", JSONUtil.toJsonStr(bo));
         this.verifyBo(bo);
         MimeMessage mimeMessage = mailSender.createMimeMessage();
         try {
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, Boolean.TRUE, StandardCharsets.UTF_8.toString());
-            helper.setFrom(bo.getFrom());
+            helper.setFrom(mailProperties.getUsername());
             helper.setTo(bo.getTo());
             helper.setSubject(bo.getSubject());
             if (StringUtils.hasText(bo.getText())) {
@@ -60,8 +69,7 @@ public class EmailPushClient {
     }
 
     private void verifyBo(MailBO bo) {
-        Assert.hasLength(bo.getFrom(),"发件人不能为空");
-        Assert.notEmpty(bo.getTo(),"收件人不能为空");
-        Assert.hasLength(bo.getSubject(),"邮件主题不能为空");
+        Assert.notEmpty(bo.getTo(), "收件人不能为空");
+        Assert.hasLength(bo.getSubject(), "邮件主题不能为空");
     }
 }

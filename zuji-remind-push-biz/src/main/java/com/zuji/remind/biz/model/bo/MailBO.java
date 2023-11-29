@@ -15,11 +15,6 @@ public class MailBO implements Serializable {
     private static final long serialVersionUID = 1849253377094726758L;
 
     /**
-     * 发件人。
-     */
-    private String from;
-
-    /**
      * 收件人。
      */
     private String[] to;

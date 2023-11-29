@@ -15,12 +15,4 @@ import org.springframework.context.annotation.Configuration;
 @Data
 public class CommonConfig {
 
-    private DingDingConfig dingDingConfig;
-
-    @Data
-    public static class DingDingConfig {
-        private String url;
-        private String accessToken;
-        private String secret;
-    }
 }

@@ -1,7 +1,15 @@
 package com.zuji.remind.biz.service.factory;
 
+import cn.hutool.json.JSONUtil;
 import com.dingtalk.api.request.OapiRobotSendRequest;
-import com.zuji.remind.biz.enums.EventTypeEnum;
+import com.zuji.remind.biz.client.DingDingPushClient;
+import com.zuji.remind.biz.client.EmailPushClient;
+import com.zuji.remind.biz.entity.MsgPushWay;
+import com.zuji.remind.biz.model.bo.MailBO;
+import com.zuji.remind.biz.model.bo.MsgPushWayBO;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.Map;
 
 /**
  * 抽象类型.
@@ -12,31 +20,41 @@ import com.zuji.remind.biz.enums.EventTypeEnum;
 
 public abstract class AbstractEventFactory {
 
-    public static AbstractEventFactory getInstance(int type, int dateType, String memorialDate, int isLeapMonth, String remindTimes) {
-        EventTypeEnum typeEnum = EventTypeEnum.getByCode(type);
-        switch (typeEnum) {
-            case BIRTHDAY:
-                return new BirthdayEventFactory(dateType, memorialDate, isLeapMonth, remindTimes);
-            case ANNIVERSARY:
-                return new AnniversaryEventFactory(dateType, memorialDate, isLeapMonth, remindTimes);
-            case COUNTDOWN:
-                return new CountdownEventFactory(dateType, memorialDate, isLeapMonth, remindTimes);
-            default:
-                throw new RuntimeException("暂不支持[" + type + "]类型");
-        }
+    protected EmailPushClient emailPushClient;
+    protected DingDingPushClient dingDingPushClient;
+
+    @Autowired
+    public void setEmailPushClient(EmailPushClient emailPushClient) {
+        this.emailPushClient = emailPushClient;
     }
 
-    public abstract boolean analyzeNotify();
+    @Autowired
+    public void setDingDingPushClient(DingDingPushClient dingDingPushClient) {
+        this.dingDingPushClient = dingDingPushClient;
+    }
 
+    protected void sendEmail(MailBO bo, String userInfo) {
+        MsgPushWayBO.EmailWayBO wayBO = JSONUtil.toBean(userInfo, MsgPushWayBO.EmailWayBO.class);
+        bo.setTo(wayBO.getTo());
+        bo.setCc(wayBO.getCc());
+        emailPushClient.sendMessage(bo);
+    }
+
+    protected void sendDingDing(OapiRobotSendRequest requestBody, String sendInfo) {
+        MsgPushWayBO.DingDingBO wayBO = JSONUtil.toBean(sendInfo, MsgPushWayBO.DingDingBO.class);
+        dingDingPushClient.send(requestBody, wayBO);
+    }
+
+    public abstract boolean analyzeNotify(int dateType, String memorialDate, int isLeapMonth, String remindTimes);
 
     /**
-     * 获取推送钉钉机器人消息体。
+     * 发送消息
      *
-     * @param name     任务名称
-     * @param taskDesc 任务描述
-     * @return {@link OapiRobotSendRequest}
+     * @param remindWay 发送方式
+     * @param name      名称
+     * @param taskDesc  描述
      */
-    public abstract OapiRobotSendRequest getDingDingMessageBody(String name, String taskDesc);
+    public abstract void sendMsg(Map<Integer, MsgPushWay> pushWayMap, String remindWay, String name, String taskDesc);
 
     @Override
     public String toString() {

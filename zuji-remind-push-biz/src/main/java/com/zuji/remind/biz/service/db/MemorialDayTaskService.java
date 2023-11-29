@@ -1,6 +1,5 @@
 package com.zuji.remind.biz.service.db;
 
-import com.baomidou.mybatisplus.extension.service.IService;
 import com.zuji.remind.biz.entity.MemorialDayTask;
 
 import java.util.List;
@@ -11,7 +10,7 @@ import java.util.List;
  * @author jianjun.wang@theone.art
  * @create 2023-09-11 22:07
  **/
-public interface MemorialDayTaskService extends IService<MemorialDayTask> {
+public interface MemorialDayTaskService {
     List<MemorialDayTask> listAll();
 
     MemorialDayTask getById(Long id);
