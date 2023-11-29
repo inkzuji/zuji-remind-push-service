@@ -33,3 +33,4 @@ build/
 .vscode/
 logs
 /zuji-remind-push-biz/src/main/resources/application-dev.yml
+.DS_Store
