@@ -38,8 +38,8 @@ public class AnniversaryScheduler {
     }
 
     @Async("commonThreadPoolExecutor")
-    // @Scheduled(cron = "0 0 9 * * ?")
-    @Scheduled(cron = "0 0/1 * * * ?")
+    @Scheduled(cron = "0 0 9/21 * * ?")
+    // @Scheduled(cron = "0 0/1 * * * ?")
     public void task() {
         log.info("开始纪念日定时任务");
         List<MemorialDayTask> memorialDayTaskList = memorialDayTaskService.listAll();

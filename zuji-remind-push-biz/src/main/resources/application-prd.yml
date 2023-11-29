@@ -36,11 +36,6 @@ spring:
     port:
     username:
     password:
-custom:
-  ding-ding-config:
-    url: https://oapi.dingtalk.com/robot/send?access_token=
-    access-token:
-    secret:
 logging:
   level:
     root: info
