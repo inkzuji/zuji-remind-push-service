@@ -5,7 +5,7 @@ import lombok.Getter;
 /**
  * 日期类型.
  *
- * @author jianjun.wang@theone.art
+ * @author inkzuji@gmail.com
  * @create 2023-10-18 11:03
  **/
 @Getter

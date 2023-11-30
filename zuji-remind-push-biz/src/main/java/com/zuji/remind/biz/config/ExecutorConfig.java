@@ -12,7 +12,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 /**
  * ExecutorConfig.
  *
- * @author jianjun.wang@theone.art
+ * @author inkzuji@gmail.com
  * @create  2023-10-18 16:01
  **/
 @Data

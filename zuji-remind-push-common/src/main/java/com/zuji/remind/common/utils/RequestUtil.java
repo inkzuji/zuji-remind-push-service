@@ -7,7 +7,7 @@ import java.net.UnknownHostException;
 /**
  * 请求工具类.
  *
- * @author jianjun.wang@theone.art
+ * @author inkzuji@gmail.com
  * @create 2023-09-22 23:33
  **/
 public class RequestUtil {

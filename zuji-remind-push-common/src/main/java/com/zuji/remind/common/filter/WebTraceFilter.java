@@ -19,7 +19,7 @@ import java.io.IOException;
 /**
  * web请求新增traceId.
  *
- * @author jianjun.wang@theone.art
+ * @author inkzuji@gmail.com
  * @create  2023-10-18 15:47
  **/
 @Component

@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 /**
  * 倒数纪念日bo.
  *
- * @author jianjun.wang@theone.art
+ * @author inkzuji@gmail.com
  * @create 2023-09-11 22:25
  **/
 @Data

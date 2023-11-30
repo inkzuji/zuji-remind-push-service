@@ -5,7 +5,7 @@ import com.zuji.remind.common.api.IErrorCode;
 /**
  * 自定义异常.
  *
- * @author jianjun.wang@theone.art
+ * @author inkzuji@gmail.com
  * @create 2023-09-22 23:29
  **/
 public class ApiException extends RuntimeException {

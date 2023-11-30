@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 /**
  * 全局异常处理类.
  *
- * @author jianjun.wang@theone.art
+ * @author inkzuji@gmail.com
  * @create 2023-09-22 23:30
  **/
 @Slf4j

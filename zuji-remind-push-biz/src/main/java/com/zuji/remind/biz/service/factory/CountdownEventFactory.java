@@ -22,7 +22,7 @@ import static com.zuji.remind.common.constant.CommonConstant.ZERO_LONG;
 /**
  * 倒计时.
  *
- * @author jianjun.wang@theone.art
+ * @author inkzuji@gmail.com
  * @create 2023-09-12 21:41
  **/
 @Service

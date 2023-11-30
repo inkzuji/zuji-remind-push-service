@@ -14,7 +14,7 @@ import static com.zuji.remind.common.constant.CommonConstant.ZERO_LONG;
 /**
  * 倒计时通知抽象类实现.
  *
- * @author jianjun.wang@theone.art
+ * @author inkzuji@gmail.com
  * @create 2023-10-18 11:39
  **/
 public class CountdownNotifyFactory extends AbstractNotifyFactory {

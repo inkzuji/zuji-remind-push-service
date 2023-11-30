@@ -6,7 +6,7 @@ import java.util.Objects;
 /**
  * Controller层的日志封装类.
  *
- * @author jianjun.wang@theone.art
+ * @author inkzuji@gmail.com
  * @create 2023-09-23 16:01
  **/
 public class WebLog implements Serializable {

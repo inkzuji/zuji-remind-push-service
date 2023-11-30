@@ -7,7 +7,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 /**
  * mybatis配置.
  *
- * @author jianjun.wang@theone.art
+ * @author inkzuji@gmail.com
  * @create 2023-09-23 16:16
  **/
 @Configuration

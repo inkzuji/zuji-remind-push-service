@@ -9,7 +9,7 @@ import java.time.LocalDate;
 /**
  * 日期抽象类.
  *
- * @author jianjun.wang@theone.art
+ * @author inkzuji@gmail.com
  * @create 2023-10-18 11:02
  **/
 public abstract class AbstractDateFactory {

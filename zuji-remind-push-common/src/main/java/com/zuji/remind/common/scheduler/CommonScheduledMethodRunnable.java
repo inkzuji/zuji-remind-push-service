@@ -9,7 +9,7 @@ import java.lang.reflect.Method;
 /**
  * ScheduledMethodRunnable.
  *
- * @author jianjun.wang@theone.art
+ * @author inkzuji@gmail.com
  * @create 2023-10-18 15:31
  **/
 @Slf4j

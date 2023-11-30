@@ -14,7 +14,7 @@ import java.util.Map;
 /**
  * 抽象类型.
  *
- * @author jianjun.wang@theone.art
+ * @author inkzuji@gmail.com
  * @create 2023-09-11 22:58
  **/
 

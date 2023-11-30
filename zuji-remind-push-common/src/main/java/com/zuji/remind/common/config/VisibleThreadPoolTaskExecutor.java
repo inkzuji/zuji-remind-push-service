@@ -11,7 +11,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 /**
  * VisibleThreadPoolTaskExecutor.
  *
- * @author jianjun.wang@theone.art
+ * @author inkzuji@gmail.com
  * @create 2023-10-18 15:26
  **/
 @Slf4j

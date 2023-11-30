@@ -11,7 +11,7 @@ import java.time.LocalDate;
 /**
  * 阴历日期服务实现.
  *
- * @author jianjun.wang@theone.art
+ * @author inkzuji@gmail.com
  * @create 2023-10-18 10:30
  **/
 public class LunarCalendarDateFactory extends AbstractDateFactory {

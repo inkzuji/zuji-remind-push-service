@@ -10,7 +10,7 @@ import java.io.Serializable;
 /**
  * 出参.
  *
- * @author jianjun.wang@theone.art
+ * @author inkzuji@gmail.com
  * @create 2023-09-23 16:18
  **/
 public class MemorialDayTaskVO {

@@ -7,7 +7,7 @@ import java.util.List;
 /**
  * 倒数记录任务.
  *
- * @author jianjun.wang@theone.art
+ * @author inkzuji@gmail.com
  * @create 2023-09-11 22:07
  **/
 public interface MemorialDayTaskService {

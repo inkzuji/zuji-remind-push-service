@@ -5,7 +5,7 @@ import lombok.Getter;
 /**
  * 事件类型.
  *
- * @author jianjun.wang@theone.art
+ * @author inkzuji@gmail.com
  * @create 2023-09-12 21:14
  **/
 @Getter

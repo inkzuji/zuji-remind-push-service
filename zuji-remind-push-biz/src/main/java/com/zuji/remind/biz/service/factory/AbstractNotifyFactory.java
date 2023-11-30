@@ -8,7 +8,7 @@ import java.time.LocalDate;
 /**
  * 通知抽象类.
  *
- * @author jianjun.wang@theone.art
+ * @author inkzuji@gmail.com
  * @create 2023-10-18 11:31
  **/
 public abstract class AbstractNotifyFactory {

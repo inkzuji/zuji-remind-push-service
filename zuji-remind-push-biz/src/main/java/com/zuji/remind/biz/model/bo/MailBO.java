@@ -7,7 +7,7 @@ import java.io.Serializable;
 /**
  * 邮件bo.
  *
- * @author jianjun.wang@theone.art
+ * @author inkzuji@gmail.com
  * @create 2023-10-18 17:03
  **/
 @Data

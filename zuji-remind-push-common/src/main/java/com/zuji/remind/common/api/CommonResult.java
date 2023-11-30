@@ -8,7 +8,7 @@ import java.util.Objects;
 /**
  * 公共返回类.
  *
- * @author jianjun.wang@theone.art
+ * @author inkzuji@gmail.com
  * @create 2023-09-22 22:46
  **/
 @Data

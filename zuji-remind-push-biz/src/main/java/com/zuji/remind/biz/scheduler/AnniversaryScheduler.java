@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 /**
  * 纪念日定时任务.
  *
- * @author jianjun.wang@theone.art
+ * @author inkzuji@gmail.com
  * @create 2023-09-11 22:22
  **/
 @Slf4j

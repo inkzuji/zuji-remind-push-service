@@ -18,7 +18,7 @@ import java.nio.charset.StandardCharsets;
 /**
  * 钉钉推送.
  *
- * @author jianjun.wang@theone.art
+ * @author inkzuji@gmail.com
  * @create 2023-09-12 22:06
  **/
 @Component

@@ -13,7 +13,7 @@ import static com.zuji.remind.common.constant.CommonConstant.ONE_LONG;
 /**
  * 阳历日期服务实现.
  *
- * @author jianjun.wang@theone.art
+ * @author inkzuji@gmail.com
  * @create 2023-10-18 10:29
  **/
 public class SolarCalendarDateFactory extends AbstractDateFactory {

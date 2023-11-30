@@ -11,7 +11,7 @@ import java.util.Map;
 /**
  * MdcTaskDecorator.
  *
- * @author jianjun.wang@theone.art
+ * @author inkzuji@gmail.com
  * @create 2023-10-18 15:17
  **/
 public class MdcTaskDecorator implements TaskDecorator {

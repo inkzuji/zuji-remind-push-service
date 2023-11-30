@@ -5,7 +5,7 @@ import java.time.DayOfWeek;
 /**
  * 日期转换工具类.
  *
- * @author jianjun.wang@theone.art
+ * @author inkzuji@gmail.com
  * @create 2023-09-18 22:27
  **/
 public class DateUtils {

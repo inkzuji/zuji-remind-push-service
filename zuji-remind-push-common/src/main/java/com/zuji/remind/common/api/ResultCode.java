@@ -6,7 +6,7 @@ import lombok.Getter;
 /**
  * 返回code.
  *
- * @author jianjun.wang@theone.art
+ * @author inkzuji@gmail.com
  * @create 2023-09-22 22:48
  **/
 @Getter

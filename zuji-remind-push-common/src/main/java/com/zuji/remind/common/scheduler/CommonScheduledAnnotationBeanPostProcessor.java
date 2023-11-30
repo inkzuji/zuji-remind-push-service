@@ -9,7 +9,7 @@ import java.lang.reflect.Method;
 /**
  * ScheduledAnnotationBeanPostProcessor.
  *
- * @author jianjun.wang@theone.art
+ * @author inkzuji@gmail.com
  * @create 2023-10-18 15:32
  **/
 public class CommonScheduledAnnotationBeanPostProcessor extends ScheduledAnnotationBeanPostProcessor {

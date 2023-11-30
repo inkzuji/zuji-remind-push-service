@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 /**
  * 提醒.
  *
- * @author jianjun.wang@theone.art
+ * @author inkzuji@gmail.com
  * @create 2023-09-20 21:41
  **/
 @RequestMapping(value = "/api/memorialDay")

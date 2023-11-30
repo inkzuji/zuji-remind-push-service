@@ -3,7 +3,7 @@ package com.zuji.remind.common.constant;
 /**
  * 公共常量类.
  *
- * @author jianjun.wang@theone.art
+ * @author inkzuji@gmail.com
  * @create 2023-10-18 10:48
  **/
 public class CommonConstant {

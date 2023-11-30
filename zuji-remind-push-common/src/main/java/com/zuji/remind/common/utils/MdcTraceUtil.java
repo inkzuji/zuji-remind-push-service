@@ -6,7 +6,7 @@ import org.slf4j.MDC;
 /**
  * mdc tranceId 工具类.
  *
- * @author jianjun.wang@theone.art
+ * @author inkzuji@gmail.com
  * @create 2023-10-18 15:51
  **/
 public class MdcTraceUtil {

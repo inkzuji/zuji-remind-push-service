@@ -14,7 +14,7 @@ import java.util.Objects;
 /**
  * 入参：提醒日任务DTO.
  *
- * @author jianjun.wang@theone.art
+ * @author inkzuji@gmail.com
  * @create 2023-10-18 14:27
  **/
 public class MemorialDayTaskDTO {

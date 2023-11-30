@@ -35,7 +35,7 @@ import java.util.Map;
 /**
  * 统一日志处理切面.
  *
- * @author jianjun.wang@theone.art
+ * @author inkzuji@gmail.com
  * @create 2023-09-23 15:49
  **/
 @Aspect
