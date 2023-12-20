@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zuji.remind.biz.mapper.MsgPushTaskMapper">
+  <resultMap id="BaseResultMap" type="com.zuji.remind.biz.entity.MsgPushTask">
+    <!--@mbg.generated-->
+    <!--@Table msg_push_task-->
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="msg_type" jdbcType="TINYINT" property="msgType" />
+    <result column="msg_context" jdbcType="LONGVARCHAR" property="msgContext" />
+    <result column="msg_result" jdbcType="LONGVARCHAR" property="msgResult" />
+    <result column="status" jdbcType="TINYINT" property="status" />
+    <result column="push_num" jdbcType="INTEGER" property="pushNum" />
+    <result column="msg_index" jdbcType="INTEGER" property="msgIndex" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    <!--@mbg.generated-->
+    id, msg_type, msg_context, msg_result, `status`, push_num, msg_index, update_time, 
+    create_time
+  </sql>
+</mapper>
