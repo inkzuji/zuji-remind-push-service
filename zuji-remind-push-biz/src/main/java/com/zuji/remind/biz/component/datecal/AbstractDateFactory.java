@@ -1,4 +1,4 @@
-package com.zuji.remind.biz.service.factory;
+package com.zuji.remind.biz.component.datecal;
 
 import cn.hutool.core.date.ChineseDate;
 import com.zuji.remind.biz.enums.DateTypeEnum;
@@ -14,9 +14,8 @@ import java.time.LocalDate;
  **/
 public abstract class AbstractDateFactory {
 
-    public static AbstractDateFactory getInstance(int type) {
-        DateTypeEnum dateTypeEnum = DateTypeEnum.getByType(type);
-        switch (dateTypeEnum) {
+    public static AbstractDateFactory getInstance(DateTypeEnum type) {
+        switch (type) {
             case SOLAR_CALENDAR:
                 return new SolarCalendarDateFactory();
             case LUNAR_CALENDAR:

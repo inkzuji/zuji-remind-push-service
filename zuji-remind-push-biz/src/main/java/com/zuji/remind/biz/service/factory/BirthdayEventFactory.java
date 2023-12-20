@@ -1,11 +1,10 @@
 package com.zuji.remind.biz.service.factory;
 
 import cn.hutool.core.date.ChineseDate;
-import cn.hutool.core.util.StrUtil;
 import com.dingtalk.api.request.OapiRobotSendRequest;
-import com.zuji.remind.biz.entity.MsgPushWay;
-import com.zuji.remind.biz.enums.EventTypeEnum;
-import com.zuji.remind.biz.enums.RemindWayEnum;
+import com.zuji.remind.biz.component.datecal.AbstractDateFactory;
+import com.zuji.remind.biz.component.notify.AbstractNotifyFactory;
+import com.zuji.remind.biz.model.bo.EventContextBO;
 import com.zuji.remind.biz.model.bo.MailBO;
 import com.zuji.remind.biz.untils.DateUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -15,7 +14,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import static com.zuji.remind.common.constant.CommonConstant.ZERO_LONG;
 
@@ -27,60 +25,45 @@ import static com.zuji.remind.common.constant.CommonConstant.ZERO_LONG;
  **/
 @Service
 public class BirthdayEventFactory extends AbstractEventFactory {
-    private volatile long intervalDays;
-    private volatile LocalDate nextBirthdayDate;
-    private volatile ChineseDate nextBirthdayChineseDate;
-
+    
     @Override
-    public boolean analyzeNotify(int dateType, String memorialDate, int isLeapMonth, String remindTimes) {
-        AbstractDateFactory dateFactory = AbstractDateFactory.getInstance(dateType);
-        ImmutablePair<LocalDate, ChineseDate> nextDatePair = dateFactory.analyzeNextNotifyDate(memorialDate, 1 == isLeapMonth);
-        this.nextBirthdayDate = nextDatePair.getLeft();
-        this.nextBirthdayChineseDate = nextDatePair.getRight();
-
-        AbstractNotifyFactory notifyFactory = AbstractNotifyFactory.getInstance(EventTypeEnum.BIRTHDAY);
-        ImmutablePair<Boolean, Long> notifyResult = notifyFactory.analyzeIsNotify(nextBirthdayDate, remindTimes);
-        this.intervalDays = notifyResult.getRight();
-        return notifyResult.getLeft();
+    void calculateDate(EventContextBO contextBO) {
+        AbstractDateFactory dateFactory = contextBO.getDateFactory();
+        EventContextBO.OriginalDB originalDB = contextBO.getOriginalDB();
+        ImmutablePair<LocalDate, ChineseDate> recordDatePair = dateFactory.analyzeCurrentNotifyDate(originalDB.getMemorialDate(), originalDB.getIsLeapMonth());
+        ImmutablePair<LocalDate, ChineseDate> nextDatePair = dateFactory.analyzeNextNotifyDate(originalDB.getMemorialDate(), originalDB.getIsLeapMonth());
+        EventContextBO.CalculateResultBO calculateResultBO = contextBO.getCalculateResultBO();
+        calculateResultBO.setRecordDate(recordDatePair.getLeft());
+        calculateResultBO.setRecordChineseDate(recordDatePair.getRight());
+        calculateResultBO.setThisYearDate(nextDatePair.getLeft());
+        calculateResultBO.setThisYearChineseDate(nextDatePair.getRight());
     }
 
-    /**
-     * 发送消息
-     *
-     * @param remindWay 发送方式
-     * @param name      名称
-     * @param taskDesc  描述
-     */
     @Override
-    public void sendMsg(Map<Integer, MsgPushWay> pushWayMap, String remindWay, String name, String taskDesc) {
-        for (String way : remindWay.split(StrUtil.COMMA)) {
-            RemindWayEnum remindWayEnum = RemindWayEnum.getByCode(Integer.parseInt(way));
-            switch (remindWayEnum) {
-                case EMAIL:
-                    super.sendEmail(this.getEmailBO(name, taskDesc), pushWayMap.get(RemindWayEnum.EMAIL.getCode()).getPushContext());
-                    break;
-                case DING_DING:
-                    super.sendDingDing(this.getDingDingMessageBody(name, taskDesc), pushWayMap.get(RemindWayEnum.DING_DING.getCode()).getPushContext());
-                    break;
-                case WECHAT:
-                    break;
-                default:
-                    throw new RuntimeException("暂不支持[" + way + "]方式");
-            }
-        }
+    void calculateNotify(EventContextBO contextBO) {
+        AbstractNotifyFactory notifyFactory = contextBO.getNotifyFactory();
+        EventContextBO.OriginalDB originalDB = contextBO.getOriginalDB();
+        EventContextBO.CalculateResultBO calculateResultBO = contextBO.getCalculateResultBO();
+        ImmutablePair<Boolean, Long> notifyResult = notifyFactory.analyzeIsNotify(calculateResultBO.getThisYearDate(), originalDB.getRemindTimes());
+        calculateResultBO.setIsNotify(notifyResult.getLeft());
+        calculateResultBO.setIntervalDays(notifyResult.getRight());
     }
 
-    private MailBO getEmailBO(String name, String taskDesc) {
+    @Override
+    MailBO getEmailBO(EventContextBO contextBO) {
+        EventContextBO.OriginalDB originalDB = contextBO.getOriginalDB();
+        EventContextBO.CalculateResultBO calculateResultBO = contextBO.getCalculateResultBO();
+
         StringBuffer bf = new StringBuffer();
         bf.append("<html><h3>生日提醒</h3>");
-        bf.append("<p>生日:").append(name).append("</p>");
-        if (this.intervalDays > ZERO_LONG) {
-            bf.append(String.format("距离生日还有**%d**天！", this.intervalDays));
+        bf.append("<p>生日:").append(originalDB.getName()).append("</p>");
+        if (calculateResultBO.getIntervalDays() > ZERO_LONG) {
+            bf.append(String.format("距离生日还有**%d**天！", calculateResultBO.getIntervalDays()));
         } else {
             bf.append("<p>生日快乐！</p>");
         }
-        if (StringUtils.isNotBlank(taskDesc)) {
-            bf.append("<p>").append(taskDesc).append("</p>");
+        if (StringUtils.isNotBlank(originalDB.getTaskDesc())) {
+            bf.append("<p>").append(originalDB.getTaskDesc()).append("</p>");
         }
         bf.append("</html>");
         MailBO bo = new MailBO();
@@ -89,25 +72,25 @@ public class BirthdayEventFactory extends AbstractEventFactory {
         return bo;
     }
 
-    /**
-     * 获取推送钉钉机器人消息体。
-     *
-     * @param name     任务名称
-     * @param taskDesc 任务描述
-     * @return {@link OapiRobotSendRequest}
-     */
-    private OapiRobotSendRequest getDingDingMessageBody(String name, String taskDesc) {
+    @Override
+    OapiRobotSendRequest getDingDingMessageBody(EventContextBO contextBO) {
+        EventContextBO.OriginalDB originalDB = contextBO.getOriginalDB();
+        EventContextBO.CalculateResultBO calculateResultBO = contextBO.getCalculateResultBO();
+        LocalDate thisYearDate = calculateResultBO.getThisYearDate();
+        ChineseDate thisYearChineseDate = calculateResultBO.getThisYearChineseDate();
+
         List<Object> list = new ArrayList<>();
         list.add("### 生日提醒");
-        list.add(String.format("**%s**", name));
-        list.add(String.format("**生日**: %s", this.getDateFormat()));
-        if (this.intervalDays > ZERO_LONG) {
-            list.add(String.format("距离生日还有**%d**天！", this.intervalDays));
+        list.add(String.format("**%s**", originalDB.getName()));
+        list.add(String.format("**生日**: %s", String.format("%s %s (%s%s)", thisYearDate, DateUtils.week2Str(thisYearDate.getDayOfWeek()),
+                thisYearChineseDate.getChineseMonthName(), thisYearChineseDate.getChineseDay())));
+        if (calculateResultBO.getIntervalDays() > ZERO_LONG) {
+            list.add(String.format("距离生日还有**%d**天！", calculateResultBO.getIntervalDays()));
         } else {
             list.add("生日快乐！");
         }
-        if (StringUtils.isNotBlank(taskDesc)) {
-            list.add(String.format("> %s", taskDesc));
+        if (StringUtils.isNotBlank(originalDB.getTaskDesc())) {
+            list.add(String.format("> %s", originalDB.getTaskDesc()));
         }
 
         OapiRobotSendRequest.Markdown markdown = new OapiRobotSendRequest.Markdown();
@@ -118,13 +101,4 @@ public class BirthdayEventFactory extends AbstractEventFactory {
         sendRequest.setMarkdown(markdown);
         return sendRequest;
     }
-
-    /**
-     * 拼接通知文本.
-     */
-    private String getDateFormat() {
-        return String.format("%s %s (%s%s)", nextBirthdayDate, DateUtils.week2Str(nextBirthdayDate.getDayOfWeek()),
-                this.nextBirthdayChineseDate.getChineseMonthName(), this.nextBirthdayChineseDate.getChineseDay());
-    }
-
 }

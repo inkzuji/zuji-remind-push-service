@@ -26,7 +26,7 @@ public class MsgPushWay implements Serializable {
     /**
      * 推送类型: 1=邮箱;2=钉钉;3=微信
      */
-    private int pushType;
+    private Integer pushType;
 
     /**
      * 名称

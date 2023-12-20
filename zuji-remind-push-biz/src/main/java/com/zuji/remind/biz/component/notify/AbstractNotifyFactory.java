@@ -1,4 +1,4 @@
-package com.zuji.remind.biz.service.factory;
+package com.zuji.remind.biz.component.notify;
 
 import com.zuji.remind.biz.enums.EventTypeEnum;
 import org.apache.commons.lang3.tuple.ImmutablePair;

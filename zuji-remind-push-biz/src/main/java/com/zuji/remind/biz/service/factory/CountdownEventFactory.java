@@ -1,11 +1,10 @@
 package com.zuji.remind.biz.service.factory;
 
 import cn.hutool.core.date.ChineseDate;
-import cn.hutool.core.util.StrUtil;
 import com.dingtalk.api.request.OapiRobotSendRequest;
-import com.zuji.remind.biz.entity.MsgPushWay;
-import com.zuji.remind.biz.enums.EventTypeEnum;
-import com.zuji.remind.biz.enums.RemindWayEnum;
+import com.zuji.remind.biz.component.datecal.AbstractDateFactory;
+import com.zuji.remind.biz.component.notify.AbstractNotifyFactory;
+import com.zuji.remind.biz.model.bo.EventContextBO;
 import com.zuji.remind.biz.model.bo.MailBO;
 import com.zuji.remind.biz.untils.DateUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -15,7 +14,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import static com.zuji.remind.common.constant.CommonConstant.ZERO_LONG;
 
@@ -27,60 +25,43 @@ import static com.zuji.remind.common.constant.CommonConstant.ZERO_LONG;
  **/
 @Service
 public class CountdownEventFactory extends AbstractEventFactory {
-    private volatile long intervalDays;
-    private volatile LocalDate countdownDate;
-    private volatile ChineseDate countdownChineseDate;
-
     @Override
-    public boolean analyzeNotify(int dateType, String memorialDate, int isLeapMonth, String remindTimes) {
-        AbstractDateFactory dateFactory = AbstractDateFactory.getInstance(dateType);
-        ImmutablePair<LocalDate, ChineseDate> currentNotifyDatePair = dateFactory.analyzeCurrentNotifyDate(memorialDate, 1 == isLeapMonth);
-        this.countdownDate = currentNotifyDatePair.getLeft();
-        this.countdownChineseDate = currentNotifyDatePair.getRight();
-
-        AbstractNotifyFactory notifyFactory = AbstractNotifyFactory.getInstance(EventTypeEnum.COUNTDOWN);
-        ImmutablePair<Boolean, Long> analyzeIsNotify = notifyFactory.analyzeIsNotify(countdownDate, remindTimes);
-        this.intervalDays = analyzeIsNotify.getRight();
-        return analyzeIsNotify.getLeft();
+    void calculateDate(EventContextBO contextBO) {
+        AbstractDateFactory dateFactory = contextBO.getDateFactory();
+        EventContextBO.OriginalDB originalDB = contextBO.getOriginalDB();
+        ImmutablePair<LocalDate, ChineseDate> recordDatePair = dateFactory.analyzeCurrentNotifyDate(originalDB.getMemorialDate(), originalDB.getIsLeapMonth());
+        EventContextBO.CalculateResultBO calculateResultBO = contextBO.getCalculateResultBO();
+        calculateResultBO.setRecordDate(recordDatePair.getLeft());
+        calculateResultBO.setRecordChineseDate(recordDatePair.getRight());
+        calculateResultBO.setThisYearDate(recordDatePair.getLeft());
+        calculateResultBO.setThisYearChineseDate(recordDatePair.getRight());
     }
 
-    /**
-     * 发送消息
-     *
-     * @param remindWay 发送方式
-     * @param name      名称
-     * @param taskDesc  描述
-     */
     @Override
-    public void sendMsg(Map<Integer, MsgPushWay> pushWayMap, String remindWay, String name, String taskDesc) {
-        for (String way : remindWay.split(StrUtil.COMMA)) {
-            RemindWayEnum remindWayEnum = RemindWayEnum.getByCode(Integer.parseInt(way));
-            switch (remindWayEnum) {
-                case EMAIL:
-                    super.sendEmail(this.getEmailBO(name, taskDesc), pushWayMap.get(RemindWayEnum.EMAIL.getCode()).getPushContext());
-                    break;
-                case DING_DING:
-                    super.sendDingDing(this.getDingDingMessageBody(name, taskDesc), pushWayMap.get(RemindWayEnum.DING_DING.getCode()).getPushContext());
-                    break;
-                case WECHAT:
-                    break;
-                default:
-                    throw new RuntimeException("暂不支持[" + way + "]方式");
-            }
-        }
+    void calculateNotify(EventContextBO contextBO) {
+        AbstractNotifyFactory notifyFactory = contextBO.getNotifyFactory();
+        EventContextBO.OriginalDB originalDB = contextBO.getOriginalDB();
+        EventContextBO.CalculateResultBO calculateResultBO = contextBO.getCalculateResultBO();
+        ImmutablePair<Boolean, Long> notifyResult = notifyFactory.analyzeIsNotify(calculateResultBO.getThisYearDate(), originalDB.getRemindTimes());
+        calculateResultBO.setIsNotify(notifyResult.getLeft());
+        calculateResultBO.setIntervalDays(notifyResult.getRight());
     }
 
-    private MailBO getEmailBO(String name, String taskDesc) {
+    @Override
+    MailBO getEmailBO(EventContextBO contextBO) {
+        EventContextBO.OriginalDB originalDB = contextBO.getOriginalDB();
+        EventContextBO.CalculateResultBO calculateResultBO = contextBO.getCalculateResultBO();
+
         StringBuffer bf = new StringBuffer();
         bf.append("<html><h3>倒计时提醒</h3>");
-        bf.append("<p>").append(name).append("</p>");
-        if (this.intervalDays > ZERO_LONG) {
-            bf.append(String.format("距离倒计时还有**%d**天！", this.intervalDays));
+        bf.append("<p>").append(originalDB.getName()).append("</p>");
+        if (calculateResultBO.getIntervalDays() > ZERO_LONG) {
+            bf.append(String.format("距离倒计时还有**%d**天！", calculateResultBO.getIntervalDays()));
         } else {
             bf.append("<p>今天就是设定的倒计时哦！</p>");
         }
-        if (StringUtils.isNotBlank(taskDesc)) {
-            bf.append("<p>").append(taskDesc).append("</p>");
+        if (StringUtils.isNotBlank(originalDB.getTaskDesc())) {
+            bf.append("<p>").append(originalDB.getTaskDesc()).append("</p>");
         }
         bf.append("</html>");
         MailBO bo = new MailBO();
@@ -89,25 +70,23 @@ public class CountdownEventFactory extends AbstractEventFactory {
         return bo;
     }
 
-    /**
-     * 获取推送钉钉机器人消息体。
-     *
-     * @param name     任务名称
-     * @param taskDesc 任务描述
-     * @return {@link OapiRobotSendRequest}
-     */
-    public OapiRobotSendRequest getDingDingMessageBody(String name, String taskDesc) {
+    @Override
+    OapiRobotSendRequest getDingDingMessageBody(EventContextBO contextBO) {
+        EventContextBO.OriginalDB originalDB = contextBO.getOriginalDB();
+        EventContextBO.CalculateResultBO calculateResultBO = contextBO.getCalculateResultBO();
+
         List<Object> list = new ArrayList<>();
         list.add("### 倒计时提醒");
-        list.add(String.format("**%s**", name));
-        list.add(String.format("**倒计时**: %s", this.getDateFormat()));
-        if (this.intervalDays > ZERO_LONG) {
-            list.add(String.format("距离倒计时还有**%d**天！", this.intervalDays));
+        list.add(String.format("**%s**", originalDB.getName()));
+        list.add(String.format("**倒计时**: %s", String.format("%s %s (%s%s)", calculateResultBO.getThisYearDate(), DateUtils.week2Str(calculateResultBO.getThisYearDate().getDayOfWeek()),
+                calculateResultBO.getThisYearChineseDate().getChineseMonthName(), calculateResultBO.getThisYearChineseDate().getChineseDay())));
+        if (calculateResultBO.getIntervalDays() > ZERO_LONG) {
+            list.add(String.format("距离倒计时还有**%d**天！", calculateResultBO.getIntervalDays()));
         } else {
             list.add("今天就是设定的倒计时哦！");
         }
-        if (StringUtils.isNotBlank(taskDesc)) {
-            list.add(String.format("> %s", taskDesc));
+        if (StringUtils.isNotBlank(originalDB.getTaskDesc())) {
+            list.add(String.format("> %s", originalDB.getTaskDesc()));
         }
         OapiRobotSendRequest.Markdown markdown = new OapiRobotSendRequest.Markdown();
         markdown.setTitle("倒计时提醒");
@@ -116,13 +95,5 @@ public class CountdownEventFactory extends AbstractEventFactory {
         sendRequest.setMsgtype("markdown");
         sendRequest.setMarkdown(markdown);
         return sendRequest;
-    }
-
-    /**
-     * 拼接通知文本.
-     */
-    private String getDateFormat() {
-        return String.format("%s %s (%s%s)", countdownDate, DateUtils.week2Str(countdownDate.getDayOfWeek()),
-                countdownChineseDate.getChineseMonthName(), countdownChineseDate.getChineseDay());
     }
 }
