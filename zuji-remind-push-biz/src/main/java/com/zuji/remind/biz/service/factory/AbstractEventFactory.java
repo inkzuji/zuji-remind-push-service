@@ -14,6 +14,7 @@ import com.zuji.remind.biz.model.bo.MailBO;
 import com.zuji.remind.biz.model.bo.MemorialDayTaskBO;
 import com.zuji.remind.biz.service.db.MsgPushTaskService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDateTime;
@@ -47,12 +48,12 @@ public abstract class AbstractEventFactory {
     private void sendMessage(EventContextBO contextBO) {
         EventContextBO.OriginalDB originalDB = contextBO.getOriginalDB();
         EventContextBO.CalculateResultBO calculateResultBO = contextBO.getCalculateResultBO();
-        // if (BooleanUtils.isNotFalse(originalDB.getStatusRemind())) {
-        //     return;
-        // }
-        // if (BooleanUtils.isNotTrue(calculateResultBO.getIsNotify())) {
-        //     return;
-        // }
+        if (BooleanUtils.isNotFalse(originalDB.getStatusRemind())) {
+            return;
+        }
+        if (BooleanUtils.isNotTrue(calculateResultBO.getIsNotify())) {
+            return;
+        }
 
         int msgIndex = Integer.parseInt(LocalDateTime.now().format(DatePattern.PURE_DATE_FORMATTER));
         log.info("新增推送消息任务索引: msgIndex={}", msgIndex);
