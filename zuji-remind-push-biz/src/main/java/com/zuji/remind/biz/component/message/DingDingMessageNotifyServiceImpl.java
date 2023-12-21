@@ -4,6 +4,7 @@ import com.zuji.remind.biz.client.DingDingPushClient;
 import com.zuji.remind.biz.enums.RemindWayEnum;
 import com.zuji.remind.biz.model.bo.MsgPushWayBO;
 import com.zuji.remind.biz.model.bo.SendMessageBO;
+import com.zuji.remind.common.api.CommonResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -29,8 +30,8 @@ public class DingDingMessageNotifyServiceImpl extends AbstractMessageNotifyFacto
     }
 
     @Override
-    public void send(SendMessageBO bo) {
+    public CommonResult<Void> send(SendMessageBO bo) {
         MsgPushWayBO.DingDingBO wayBO = (MsgPushWayBO.DingDingBO) bo.getWayBO();
-        dingDingPushClient.send(bo.getDingDingRequest(), wayBO);
+        return dingDingPushClient.send(bo.getDingDingRequest(), wayBO);
     }
 }

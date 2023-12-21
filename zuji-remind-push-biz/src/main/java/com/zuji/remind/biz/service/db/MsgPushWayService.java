@@ -1,6 +1,6 @@
 package com.zuji.remind.biz.service.db;
 
-import com.zuji.remind.biz.entity.MsgPushWay;
+import com.zuji.remind.biz.model.bo.MsgPushWayBO;
 
 import java.util.List;
 
@@ -9,5 +9,5 @@ import java.util.List;
  */
 public interface MsgPushWayService {
 
-    List<MsgPushWay> listAll();
+    List<MsgPushWayBO> listAll();
 }

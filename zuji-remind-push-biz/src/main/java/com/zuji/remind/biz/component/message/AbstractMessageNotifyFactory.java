@@ -2,6 +2,7 @@ package com.zuji.remind.biz.component.message;
 
 import com.zuji.remind.biz.enums.RemindWayEnum;
 import com.zuji.remind.biz.model.bo.SendMessageBO;
+import com.zuji.remind.common.api.CommonResult;
 
 /**
  * 消息通知抽象类.
@@ -21,5 +22,5 @@ public abstract class AbstractMessageNotifyFactory {
     /**
      * 发送消息。
      */
-    public abstract void send(SendMessageBO bo);
+    public abstract CommonResult<Void> send(SendMessageBO bo);
 }

@@ -2,6 +2,7 @@ package com.zuji.remind.biz.component.message;
 
 import com.zuji.remind.biz.enums.RemindWayEnum;
 import com.zuji.remind.biz.model.bo.SendMessageBO;
+import com.zuji.remind.common.api.CommonResult;
 import org.springframework.stereotype.Service;
 
 /**
@@ -18,7 +19,7 @@ public class WeChatMessageNotifyServiceImpl extends AbstractMessageNotifyFactory
     }
 
     @Override
-    public void send(SendMessageBO bo) {
-
+    public CommonResult<Void> send(SendMessageBO bo) {
+        return CommonResult.success();
     }
 }

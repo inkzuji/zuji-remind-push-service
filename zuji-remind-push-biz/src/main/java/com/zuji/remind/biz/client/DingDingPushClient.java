@@ -5,6 +5,7 @@ import com.dingtalk.api.DingTalkClient;
 import com.dingtalk.api.request.OapiRobotSendRequest;
 import com.dingtalk.api.response.OapiRobotSendResponse;
 import com.zuji.remind.biz.model.bo.MsgPushWayBO;
+import com.zuji.remind.common.api.CommonResult;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tomcat.util.codec.binary.Base64;
@@ -31,7 +32,7 @@ public class DingDingPushClient {
      *
      * @param requestBody 内容
      */
-    public void send(OapiRobotSendRequest requestBody, MsgPushWayBO.DingDingBO wayBO) {
+    public CommonResult<Void> send(OapiRobotSendRequest requestBody, MsgPushWayBO.DingDingBO wayBO) {
         String url;
         if (StringUtils.isBlank(wayBO.getSecret())) {
             url = String.format("%s%s", wayBO.getUrl(), wayBO.getAccessToken());
@@ -45,11 +46,13 @@ public class DingDingPushClient {
             OapiRobotSendResponse response = client.execute(requestBody);
             log.info("推送钉钉消息, response={}", response.getBody());
             if (!response.isSuccess()) {
-                throw new RuntimeException("推送钉钉消息失败, errMsg=" + response.getErrmsg());
+                return CommonResult.failed(response.getErrmsg());
             }
             log.info("推送钉钉消息, response={}", response.getBody());
+            return CommonResult.success();
         } catch (Exception e) {
             log.error("推送钉钉消息失败, errMsg={}", e.getMessage(), e);
+            return CommonResult.failed();
         }
     }
 

@@ -36,6 +36,7 @@
         <alibaba-dingtalk.version>2.0.0</alibaba-dingtalk.version>
         <logstash-logback.version>7.2</logstash-logback.version>
         <lombok.version>1.18.30</lombok.version>
+        <guava.version>33.0.0-jre</guava.version>
     </properties>
     <dependencies>
         <dependency>
@@ -106,6 +107,11 @@
                 <artifactId>lombok</artifactId>
                 <version>${lombok.version}</version>
                 <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>${guava.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

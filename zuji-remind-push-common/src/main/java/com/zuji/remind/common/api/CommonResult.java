@@ -1,6 +1,7 @@
 package com.zuji.remind.common.api;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 import java.util.Objects;
@@ -107,10 +108,12 @@ public class CommonResult<T> {
         return new CommonResult<T>(ResultCode.FORBIDDEN.getCode(), ResultCode.FORBIDDEN.getMessage(), data);
     }
 
+    @JsonIgnore
     public boolean isSuccess() {
         return Objects.equals(this.code, ResultCode.SUCCESS.getCode());
     }
 
+    @JsonIgnore
     public boolean isFailed() {
         return !isSuccess();
     }

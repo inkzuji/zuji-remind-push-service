@@ -1,6 +1,7 @@
 package com.zuji.remind.biz.service.db;
 
 import com.zuji.remind.biz.entity.MsgPushTask;
+import com.zuji.remind.biz.model.bo.MsgPushTaskBO;
 
 import java.util.Collection;
 import java.util.List;
@@ -15,7 +16,9 @@ public interface MsgPushTaskService {
 
     MsgPushTask getOneById(Long id);
 
-    List<MsgPushTask> listBatchByStatus(Collection<Integer> statusList, Long id, Long limit);
+    List<MsgPushTaskBO> listBatchByStatus(Collection<Integer> statusList, Long id, Long limit);
+
+    List<MsgPushTask> listBatchByMsgIndex(Integer msgIndex, Long id, Long limit);
 
     void addOnce(MsgPushTask task);
 

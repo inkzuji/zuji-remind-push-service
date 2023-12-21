@@ -5,13 +5,13 @@ import com.zuji.remind.biz.component.datecal.AbstractDateFactory;
 import com.zuji.remind.biz.component.notify.AbstractNotifyFactory;
 import com.zuji.remind.biz.enums.DateTypeEnum;
 import com.zuji.remind.biz.enums.EventTypeEnum;
+import com.zuji.remind.biz.enums.RemindWayEnum;
 import lombok.Data;
 
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * 事件通知上下文消息.
@@ -88,12 +88,9 @@ public class EventContextBO implements Serializable {
         /**
          * 提醒方式: 0=全部;1=邮箱;2=钉钉
          */
-        private List<MsgPushWayBO> remindWayBOList;
+        private List<RemindWayEnum> remindWays;
 
-        public static OriginalDB from(MemorialDayTaskBO bo, List<MsgPushWayBO> remindWayList) {
-            List<MsgPushWayBO> pushWayBOList = remindWayList.stream()
-                    .filter(v -> bo.getRemindWays().contains(v.getPushType()))
-                    .collect(Collectors.toList());
+        public static OriginalDB from(MemorialDayTaskBO bo) {
             OriginalDB originalDB = new OriginalDB();
             originalDB.setEventType(bo.getEventType());
             originalDB.setName(bo.getName());
@@ -103,7 +100,7 @@ public class EventContextBO implements Serializable {
             originalDB.setMemorialDate(bo.getMemorialDate());
             originalDB.setStatusRemind(Objects.equals(1, bo.getStatusRemind()));
             originalDB.setRemindTimes(bo.getRemindTimes());
-            originalDB.setRemindWayBOList(pushWayBOList);
+            originalDB.setRemindWays(bo.getRemindWays());
             return originalDB;
         }
     }
@@ -149,9 +146,9 @@ public class EventContextBO implements Serializable {
         private Long intervalDays;
     }
 
-    public static EventContextBO init(MemorialDayTaskBO bo, List<MsgPushWayBO> msgPushWayBOList) {
+    public static EventContextBO init(MemorialDayTaskBO bo) {
         EventContextBO contextBO = new EventContextBO();
-        contextBO.setOriginalDB(OriginalDB.from(bo, msgPushWayBOList));
+        contextBO.setOriginalDB(OriginalDB.from(bo));
         contextBO.setCalculateResultBO(CalculateResultBO.instance());
         return contextBO;
     }

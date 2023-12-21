@@ -2,6 +2,7 @@ package com.zuji.remind.biz.client;
 
 import cn.hutool.json.JSONUtil;
 import com.zuji.remind.biz.model.bo.MailBO;
+import com.zuji.remind.common.api.CommonResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.mail.MailProperties;
@@ -41,7 +42,7 @@ public class EmailPushClient {
     /**
      * 发送邮件。
      */
-    public void sendMessage(MailBO bo) {
+    public CommonResult<Void> sendMessage(MailBO bo) {
         log.info("发送邮件入参: {}", JSONUtil.toJsonStr(bo));
         this.verifyBo(bo);
         MimeMessage mimeMessage = mailSender.createMimeMessage();
@@ -63,8 +64,10 @@ public class EmailPushClient {
                 }
             }
             mailSender.send(mimeMessage);
+            return CommonResult.success();
         } catch (Exception e) {
             log.error("发送邮件失败, errMsg={}", e.getMessage(), e);
+            return CommonResult.failed();
         }
     }
 

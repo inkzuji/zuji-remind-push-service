@@ -4,6 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
@@ -29,6 +30,11 @@ public class FrequencyNotifyFactory extends AbstractNotifyFactory {
             if (NumberUtils.compare(intervalDays, Long.parseLong(day)) == ZERO_INT) {
                 return ImmutablePair.of(true, intervalDays);
             }
+        }
+        
+        // 特殊逻辑，每周一同送一次通知, 防止忘记
+        if (DayOfWeek.MONDAY == now.getDayOfWeek()) {
+            return ImmutablePair.of(true, intervalDays);
         }
         return ImmutablePair.of(false, intervalDays);
     }

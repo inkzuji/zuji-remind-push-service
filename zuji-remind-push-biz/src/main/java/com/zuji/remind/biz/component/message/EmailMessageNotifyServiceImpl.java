@@ -5,6 +5,7 @@ import com.zuji.remind.biz.enums.RemindWayEnum;
 import com.zuji.remind.biz.model.bo.MailBO;
 import com.zuji.remind.biz.model.bo.MsgPushWayBO;
 import com.zuji.remind.biz.model.bo.SendMessageBO;
+import com.zuji.remind.common.api.CommonResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -30,11 +31,11 @@ public class EmailMessageNotifyServiceImpl extends AbstractMessageNotifyFactory 
     }
 
     @Override
-    public void send(SendMessageBO bo) {
+    public CommonResult<Void> send(SendMessageBO bo) {
         MailBO mailBO = bo.getMailBO();
         MsgPushWayBO.EmailWayBO wayBO = (MsgPushWayBO.EmailWayBO) bo.getWayBO();
         mailBO.setTo(wayBO.getTo());
         mailBO.setCc(wayBO.getCc());
-        emailPushClient.sendMessage(mailBO);
+        return emailPushClient.sendMessage(mailBO);
     }
 }
