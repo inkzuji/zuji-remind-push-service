@@ -4,6 +4,7 @@ import cn.hutool.core.date.ChineseDate;
 import com.zuji.remind.biz.component.datecal.AbstractDateFactory;
 import com.zuji.remind.biz.component.notify.AbstractNotifyFactory;
 import com.zuji.remind.biz.enums.DateTypeEnum;
+import com.zuji.remind.biz.enums.EnableStatusEnum;
 import com.zuji.remind.biz.enums.EventTypeEnum;
 import com.zuji.remind.biz.enums.RemindWayEnum;
 import lombok.Data;
@@ -11,7 +12,6 @@ import lombok.Data;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * 事件通知上下文消息.
@@ -96,9 +96,9 @@ public class EventContextBO implements Serializable {
             originalDB.setName(bo.getName());
             originalDB.setTaskDesc(bo.getTaskDesc());
             originalDB.setDateType(bo.getDateType());
-            originalDB.setIsLeapMonth(Objects.equals(1, bo.getIsLeapMonth()));
+            originalDB.setIsLeapMonth(EnableStatusEnum.ENABLE == bo.getIsLeapMonth());
             originalDB.setMemorialDate(bo.getMemorialDate());
-            originalDB.setStatusRemind(Objects.equals(1, bo.getStatusRemind()));
+            originalDB.setStatusRemind(EnableStatusEnum.ENABLE == bo.getStatusRemind());
             originalDB.setRemindTimes(bo.getRemindTimes());
             originalDB.setRemindWays(bo.getRemindWays());
             return originalDB;

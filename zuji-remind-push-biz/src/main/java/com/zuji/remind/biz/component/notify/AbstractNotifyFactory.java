@@ -3,7 +3,9 @@ package com.zuji.remind.biz.component.notify;
 import com.zuji.remind.biz.enums.EventTypeEnum;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.util.List;
 
 /**
  * 通知抽象类.
@@ -12,6 +14,7 @@ import java.time.LocalDate;
  * @create 2023-10-18 11:31
  **/
 public abstract class AbstractNotifyFactory {
+    protected static final List<DayOfWeek> SPECIAL_NOTIFY_WEEK = List.of(DayOfWeek.MONDAY, DayOfWeek.FRIDAY);
 
     public static AbstractNotifyFactory getInstance(EventTypeEnum typeEnum) {
         switch (typeEnum) {
