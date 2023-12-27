@@ -4,7 +4,6 @@ import cn.hutool.core.util.StrUtil;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
-import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
@@ -37,7 +36,7 @@ public class CountdownNotifyFactory extends AbstractNotifyFactory {
         }
 
         // 特殊逻辑，每周一同送一次通知, 防止忘记
-        if (DayOfWeek.MONDAY == now.getDayOfWeek()) {
+        if (SPECIAL_NOTIFY_WEEK.contains(now.getDayOfWeek())) {
             return ImmutablePair.of(true, intervalDays);
         }
         return ImmutablePair.of(false, intervalDays);

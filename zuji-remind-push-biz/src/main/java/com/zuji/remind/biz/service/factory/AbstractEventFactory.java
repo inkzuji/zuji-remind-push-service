@@ -48,12 +48,13 @@ public abstract class AbstractEventFactory {
     private void sendMessage(EventContextBO contextBO) {
         EventContextBO.OriginalDB originalDB = contextBO.getOriginalDB();
         EventContextBO.CalculateResultBO calculateResultBO = contextBO.getCalculateResultBO();
-        if (BooleanUtils.isNotFalse(originalDB.getStatusRemind())) {
+        if (BooleanUtils.isNotTrue(originalDB.getStatusRemind())) {
             return;
         }
         if (BooleanUtils.isNotTrue(calculateResultBO.getIsNotify())) {
             return;
         }
+        log.info("我现在可以提醒了");
 
         int msgIndex = Integer.parseInt(LocalDateTime.now().format(DatePattern.PURE_DATE_FORMATTER));
         log.info("新增推送消息任务索引: msgIndex={}", msgIndex);

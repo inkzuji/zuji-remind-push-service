@@ -56,7 +56,7 @@ public class MemorialDayTask implements Serializable {
     private String memorialDate;
 
     /**
-     * 是否提醒: 0=提醒; 1=不提醒;
+     * 是否提醒: 0=不提醒; 1=提醒;
      */
     private Integer statusRemind;
 
