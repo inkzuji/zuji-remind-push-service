@@ -86,7 +86,7 @@ public class EventContextBO implements Serializable {
         private String remindTimes;
 
         /**
-         * 提醒方式: 0=全部;1=邮箱;2=钉钉
+         * 提醒方式: 1=邮箱;2=钉钉;3=微信。
          */
         private List<RemindWayEnum> remindWays;
 

@@ -51,11 +51,29 @@ public class AnniversaryEventFactory extends AbstractEventFactory {
     }
 
     @Override
-    MailBO getEmailBO(EventContextBO contextBO) {
+    MailBO getEmailBO(String body) {
+        MailBO bo = new MailBO();
+        bo.setSubject("纪念日提醒");
+        bo.setText(String.format("<h3>纪念日提醒</h3> %s", body));
+        return bo;
+    }
+
+    @Override
+    OapiRobotSendRequest getDingDingMessageBody(String body) {
+        OapiRobotSendRequest.Markdown markdown = new OapiRobotSendRequest.Markdown();
+        markdown.setTitle("纪念日提醒");
+        markdown.setText(String.format("## 纪念日提醒  \n  %s", body));
+        OapiRobotSendRequest sendRequest = new OapiRobotSendRequest();
+        sendRequest.setMsgtype("markdown");
+        sendRequest.setMarkdown(markdown);
+        return sendRequest;
+    }
+
+    @Override
+    String getEmailMsgContent(EventContextBO contextBO) {
         EventContextBO.OriginalDB originalDB = contextBO.getOriginalDB();
         EventContextBO.CalculateResultBO calculateResultBO = contextBO.getCalculateResultBO();
         StringBuffer bf = new StringBuffer();
-        bf.append("<html><h3>纪念日提醒</h3>");
         bf.append("<p>").append(originalDB.getName()).append("</p>");
         if (calculateResultBO.getIntervalDays() > ZERO_LONG) {
             bf.append("<p>已经").append(calculateResultBO.getRecordDate().until(LocalDate.now(), ChronoUnit.DAYS)).append("天了！</p>");
@@ -65,21 +83,16 @@ public class AnniversaryEventFactory extends AbstractEventFactory {
         if (StringUtils.isNotBlank(originalDB.getTaskDesc())) {
             bf.append("<p>").append(originalDB.getTaskDesc()).append("</p>");
         }
-        bf.append("</html>");
-        MailBO bo = new MailBO();
-        bo.setSubject("纪念日提醒");
-        bo.setText(bf.toString());
-        return bo;
+        return bf.toString();
     }
 
     @Override
-    OapiRobotSendRequest getDingDingMessageBody(EventContextBO contextBO) {
+    String getDingDingMsgContent(EventContextBO contextBO) {
         EventContextBO.OriginalDB originalDB = contextBO.getOriginalDB();
         EventContextBO.CalculateResultBO calculateResultBO = contextBO.getCalculateResultBO();
 
         List<Object> list = new ArrayList<>();
-        list.add("### 纪念日提醒");
-        list.add(String.format("**%s**", originalDB.getName()));
+        list.add(String.format("### %s", originalDB.getName()));
         list.add(String.format("**纪念日**: %s", String.format("%s %s (%s%s)", calculateResultBO.getRecordDate(), DateUtils.week2Str(calculateResultBO.getRecordDate().getDayOfWeek()),
                 calculateResultBO.getThisYearChineseDate().getChineseMonthName(), calculateResultBO.getThisYearChineseDate().getChineseDay())));
         if (calculateResultBO.getIntervalDays() > ZERO_LONG) {
@@ -90,13 +103,6 @@ public class AnniversaryEventFactory extends AbstractEventFactory {
         if (StringUtils.isNotBlank(originalDB.getTaskDesc())) {
             list.add(String.format("> %s", originalDB.getTaskDesc()));
         }
-
-        OapiRobotSendRequest.Markdown markdown = new OapiRobotSendRequest.Markdown();
-        markdown.setTitle("纪念日提醒");
-        markdown.setText(StringUtils.join(list, "  \n  "));
-        OapiRobotSendRequest sendRequest = new OapiRobotSendRequest();
-        sendRequest.setMsgtype("markdown");
-        sendRequest.setMarkdown(markdown);
-        return sendRequest;
+        return StringUtils.join(list, "  \n  ");
     }
 }

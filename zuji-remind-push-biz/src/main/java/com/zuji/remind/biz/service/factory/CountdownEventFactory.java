@@ -48,12 +48,30 @@ public class CountdownEventFactory extends AbstractEventFactory {
     }
 
     @Override
-    MailBO getEmailBO(EventContextBO contextBO) {
+    MailBO getEmailBO(String body) {
+        MailBO bo = new MailBO();
+        bo.setSubject("倒计时提醒");
+        bo.setText(String.format("<h3>倒计时提醒</h3> %s", body));
+        return bo;
+    }
+
+    @Override
+    OapiRobotSendRequest getDingDingMessageBody(String body) {
+        OapiRobotSendRequest.Markdown markdown = new OapiRobotSendRequest.Markdown();
+        markdown.setTitle("倒计时提醒");
+        markdown.setText(String.format("## 倒计时提醒  \n  %s", body));
+        OapiRobotSendRequest sendRequest = new OapiRobotSendRequest();
+        sendRequest.setMsgtype("markdown");
+        sendRequest.setMarkdown(markdown);
+        return sendRequest;
+    }
+
+    @Override
+    String getEmailMsgContent(EventContextBO contextBO) {
         EventContextBO.OriginalDB originalDB = contextBO.getOriginalDB();
         EventContextBO.CalculateResultBO calculateResultBO = contextBO.getCalculateResultBO();
 
         StringBuffer bf = new StringBuffer();
-        bf.append("<html><h3>倒计时提醒</h3>");
         bf.append("<p>").append(originalDB.getName()).append("</p>");
         if (calculateResultBO.getIntervalDays() > ZERO_LONG) {
             bf.append(String.format("距离倒计时还有**%d**天！", calculateResultBO.getIntervalDays()));
@@ -63,21 +81,16 @@ public class CountdownEventFactory extends AbstractEventFactory {
         if (StringUtils.isNotBlank(originalDB.getTaskDesc())) {
             bf.append("<p>").append(originalDB.getTaskDesc()).append("</p>");
         }
-        bf.append("</html>");
-        MailBO bo = new MailBO();
-        bo.setSubject("倒计时提醒");
-        bo.setText(bf.toString());
-        return bo;
+        return bf.toString();
     }
 
     @Override
-    OapiRobotSendRequest getDingDingMessageBody(EventContextBO contextBO) {
+    String getDingDingMsgContent(EventContextBO contextBO) {
         EventContextBO.OriginalDB originalDB = contextBO.getOriginalDB();
         EventContextBO.CalculateResultBO calculateResultBO = contextBO.getCalculateResultBO();
 
         List<Object> list = new ArrayList<>();
-        list.add("### 倒计时提醒");
-        list.add(String.format("**%s**", originalDB.getName()));
+        list.add(String.format("## %s", originalDB.getName()));
         list.add(String.format("**倒计时**: %s", String.format("%s %s (%s%s)", calculateResultBO.getThisYearDate(), DateUtils.week2Str(calculateResultBO.getThisYearDate().getDayOfWeek()),
                 calculateResultBO.getThisYearChineseDate().getChineseMonthName(), calculateResultBO.getThisYearChineseDate().getChineseDay())));
         if (calculateResultBO.getIntervalDays() > ZERO_LONG) {
@@ -88,12 +101,6 @@ public class CountdownEventFactory extends AbstractEventFactory {
         if (StringUtils.isNotBlank(originalDB.getTaskDesc())) {
             list.add(String.format("> %s", originalDB.getTaskDesc()));
         }
-        OapiRobotSendRequest.Markdown markdown = new OapiRobotSendRequest.Markdown();
-        markdown.setTitle("倒计时提醒");
-        markdown.setText(StringUtils.join(list, "  \n  "));
-        OapiRobotSendRequest sendRequest = new OapiRobotSendRequest();
-        sendRequest.setMsgtype("markdown");
-        sendRequest.setMarkdown(markdown);
-        return sendRequest;
+        return StringUtils.join(list, "  \n  ");
     }
 }

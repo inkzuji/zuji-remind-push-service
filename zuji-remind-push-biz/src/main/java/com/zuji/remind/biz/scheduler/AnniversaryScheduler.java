@@ -2,8 +2,11 @@ package com.zuji.remind.biz.scheduler;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.json.JSONUtil;
+import com.google.common.collect.Lists;
 import com.zuji.remind.biz.entity.MemorialDayTask;
 import com.zuji.remind.biz.enums.EventTypeEnum;
+import com.zuji.remind.biz.enums.RemindWayEnum;
+import com.zuji.remind.biz.model.bo.AggreNotifyBO;
 import com.zuji.remind.biz.model.bo.MemorialDayTaskBO;
 import com.zuji.remind.biz.service.db.MemorialDayTaskService;
 import com.zuji.remind.biz.service.factory.AbstractEventFactory;
@@ -14,6 +17,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 纪念日定时任务.
@@ -42,13 +46,15 @@ public class AnniversaryScheduler {
             log.info("暂无数据");
             return;
         }
+        List<AggreNotifyBO> notifyList = Lists.newArrayListWithCapacity(memorialDayTaskList.size() * 3);
         for (MemorialDayTask dayTask : memorialDayTaskList) {
-            this.dealWithData(dayTask);
+            this.dealWithData(dayTask, notifyList);
         }
+        this.saveSendMsg(notifyList);
         log.info("纪念日定时任务执行完成");
     }
 
-    private void dealWithData(MemorialDayTask task) {
+    private void dealWithData(MemorialDayTask task, List<AggreNotifyBO> notifyList) {
         log.info("当前处理数据: task={}", JSONUtil.toJsonStr(task));
         int statusRemind = task.getStatusRemind();
         if (statusRemind == 0) {
@@ -57,6 +63,23 @@ public class AnniversaryScheduler {
         }
         MemorialDayTaskBO taskBO = MemorialDayTaskBO.from(task);
         AbstractEventFactory abstractEventFactory = abstractEventFactoryMap.get(EventTypeEnum.getByCode(task.getEventType()).getFactoryName());
-        abstractEventFactory.dealWithData(taskBO);
+        List<AggreNotifyBO> aggreNotifyBOList = abstractEventFactory.dealWithData(taskBO);
+        notifyList.addAll(aggreNotifyBOList);
+    }
+
+    /**
+     * 保存消息通知。
+     *
+     * @param notifyList 通知内容
+     */
+    private void saveSendMsg(List<AggreNotifyBO> notifyList) {
+        Map<EventTypeEnum, Map<RemindWayEnum, List<AggreNotifyBO>>> map = notifyList.stream()
+                .collect(Collectors.groupingBy(AggreNotifyBO::getEventTypeEnum,
+                        Collectors.groupingBy(AggreNotifyBO::getRemindWayEnum)));
+
+        map.forEach((eventType, notifyMap) -> {
+            AbstractEventFactory abstractEventFactory = abstractEventFactoryMap.get(eventType.getFactoryName());
+            abstractEventFactory.saveMessage(notifyMap);
+        });
     }
 }
