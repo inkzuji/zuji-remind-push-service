@@ -64,6 +64,7 @@ public class PushMessageScheduler {
 
         for (MsgPushTaskBO taskBO : taskBOList) {
             try {
+                log.info("推送消息内容, data = {}", JSONUtil.toJsonStr(taskBO));
                 dealWithData(taskBO, wayBOMap);
             } catch (Exception e) {
                 log.error("消息推送失败，errMsg={}", e.getMessage(), e);

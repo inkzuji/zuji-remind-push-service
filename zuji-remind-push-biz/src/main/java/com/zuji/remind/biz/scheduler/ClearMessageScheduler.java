@@ -41,6 +41,7 @@ public class ClearMessageScheduler {
         while (true) {
             List<MsgPushTask> taskList = msgPushTaskService.listBatchByMsgIndex(msgIndex, id, limit);
             if (CollectionUtil.isEmpty(taskList)) {
+                log.info("未查询到清除消息内容");
                 break;
             }
             id = taskList.get(taskList.size() - 1).getId();

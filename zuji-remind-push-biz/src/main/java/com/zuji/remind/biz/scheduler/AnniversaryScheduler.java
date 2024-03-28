@@ -1,5 +1,6 @@
 package com.zuji.remind.biz.scheduler;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.json.JSONUtil;
 import com.google.common.collect.Lists;
@@ -73,6 +74,11 @@ public class AnniversaryScheduler {
      * @param notifyList 通知内容
      */
     private void saveSendMsg(List<AggreNotifyBO> notifyList) {
+        if (CollUtil.isEmpty(notifyList)) {
+            log.info("暂无需要推送消息");
+            return;
+        }
+        log.info("保存推送消息, context = {}", JSONUtil.toJsonStr(notifyList));
         Map<EventTypeEnum, Map<RemindWayEnum, List<AggreNotifyBO>>> map = notifyList.stream()
                 .collect(Collectors.groupingBy(AggreNotifyBO::getEventTypeEnum,
                         Collectors.groupingBy(AggreNotifyBO::getRemindWayEnum)));
