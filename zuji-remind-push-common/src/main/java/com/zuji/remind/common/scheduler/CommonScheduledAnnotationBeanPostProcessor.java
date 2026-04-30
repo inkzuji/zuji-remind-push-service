@@ -14,6 +14,9 @@ import java.lang.reflect.Method;
  **/
 public class CommonScheduledAnnotationBeanPostProcessor extends ScheduledAnnotationBeanPostProcessor {
 
+    /**
+     * 创建定时任务 Runnable，替换为支持 MDC 链路追踪的 CommonScheduledMethodRunnable。
+     */
     @Override
     protected Runnable createRunnable(Object target, Method method) {
         // 这两行代码从ScheduledAnnotationBeanPostProcessor#createRunnable复制过来

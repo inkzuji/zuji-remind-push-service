@@ -17,6 +17,9 @@ import org.springframework.scheduling.config.TaskManagementConfigUtils;
 @Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 public class SchedulingConfiguration {
 
+    /**
+     * 注册自定义的定时任务后置处理器，替换默认实现以支持 MDC 链路追踪。
+     */
     @Bean(name = TaskManagementConfigUtils.SCHEDULED_ANNOTATION_PROCESSOR_BEAN_NAME)
     @Role(BeanDefinition.ROLE_INFRASTRUCTURE)
     public CommonScheduledAnnotationBeanPostProcessor scheduledAnnotationProcessor() {

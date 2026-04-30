@@ -34,3 +34,6 @@ build/
 logs
 /zuji-remind-push-biz/src/main/resources/application-dev.yml
 .DS_Store
+.vfox/
+.vfox.toml
+CLAUDE.md

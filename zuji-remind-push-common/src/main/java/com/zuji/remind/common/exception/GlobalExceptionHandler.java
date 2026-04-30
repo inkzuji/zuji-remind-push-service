@@ -19,6 +19,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @Slf4j
 @ControllerAdvice
 public class GlobalExceptionHandler {
+    /**
+     * 处理自定义API异常。
+     */
     @ResponseBody
     @ExceptionHandler(value = ApiException.class)
     public CommonResult<Void> handle(ApiException e) {
@@ -29,6 +32,9 @@ public class GlobalExceptionHandler {
         return CommonResult.failed(e.getMessage());
     }
 
+    /**
+     * 处理非法参数异常。
+     */
     @ResponseBody
     @ExceptionHandler(value = IllegalArgumentException.class)
     public CommonResult<Void> handle(IllegalArgumentException e) {
@@ -36,6 +42,9 @@ public class GlobalExceptionHandler {
         return CommonResult.failed(e.getMessage());
     }
 
+    /**
+     * 处理请求参数校验异常（@RequestBody 参数）。
+     */
     @ResponseBody
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
     public CommonResult<Void> handleValidException(MethodArgumentNotValidException e) {
@@ -51,6 +60,9 @@ public class GlobalExceptionHandler {
         return CommonResult.validateFailed(message);
     }
 
+    /**
+     * 处理请求参数绑定异常。
+     */
     @ResponseBody
     @ExceptionHandler(value = BindException.class)
     public CommonResult<Void> handleValidException(BindException e) {
@@ -66,6 +78,9 @@ public class GlobalExceptionHandler {
         return CommonResult.validateFailed(message);
     }
 
+    /**
+     * 处理兜底异常。
+     */
     @ResponseBody
     @ExceptionHandler(value = Exception.class)
     public CommonResult<Void> exceptionHandler(Exception e) {

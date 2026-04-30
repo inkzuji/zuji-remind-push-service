@@ -1,4 +1,4 @@
-package com.zuji.remind.biz.untils;
+package com.zuji.remind.biz.utils;
 
 import java.time.DayOfWeek;
 
@@ -12,8 +12,7 @@ public class DateUtils {
 
     private DateUtils() {
     }
-
-
+    
     /**
      * 获取星期几。
      *

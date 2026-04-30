@@ -27,6 +27,12 @@ public enum DateTypeEnum {
         this.type = type;
     }
 
+    /**
+     * 根据类型值获取枚举实例。
+     *
+     * @param type 类型值
+     * @return 日期类型枚举
+     */
     public static DateTypeEnum getByType(int type) {
         for (DateTypeEnum dateTypeEnum : DateTypeEnum.values()) {
             if (dateTypeEnum.getType() == type) {

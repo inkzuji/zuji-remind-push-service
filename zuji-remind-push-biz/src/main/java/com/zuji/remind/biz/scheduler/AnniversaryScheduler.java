@@ -3,19 +3,20 @@ package com.zuji.remind.biz.scheduler;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.json.JSONUtil;
-import com.google.common.collect.Lists;
-import com.zuji.remind.biz.entity.MemorialDayTask;
+import com.zuji.remind.biz.dao.entity.MemorialDayTask;
+import com.zuji.remind.biz.enums.EnableStatusEnum;
 import com.zuji.remind.biz.enums.EventTypeEnum;
 import com.zuji.remind.biz.enums.RemindWayEnum;
 import com.zuji.remind.biz.model.bo.AggreNotifyBO;
 import com.zuji.remind.biz.model.bo.MemorialDayTaskBO;
-import com.zuji.remind.biz.service.db.MemorialDayTaskService;
+import com.zuji.remind.biz.repository.MemorialDayTaskRepository;
 import com.zuji.remind.biz.service.factory.AbstractEventFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -29,25 +30,28 @@ import java.util.stream.Collectors;
 @Slf4j
 @Component
 public class AnniversaryScheduler {
-    private final MemorialDayTaskService memorialDayTaskService;
+    private final MemorialDayTaskRepository memorialDayTaskRepository;
     private final Map<String, AbstractEventFactory> abstractEventFactoryMap;
 
-    public AnniversaryScheduler(MemorialDayTaskService memorialDayTaskService, Map<String, AbstractEventFactory> abstractEventFactoryMap) {
-        this.memorialDayTaskService = memorialDayTaskService;
+    public AnniversaryScheduler(MemorialDayTaskRepository memorialDayTaskRepository, Map<String, AbstractEventFactory> abstractEventFactoryMap) {
+        this.memorialDayTaskRepository = memorialDayTaskRepository;
         this.abstractEventFactoryMap = abstractEventFactoryMap;
     }
 
+    /**
+     * 纪念日定时任务，每天 09:00 执行，扫描所有纪念日事件并生成推送消息。
+     */
     @Async("commonThreadPoolExecutor")
     @Scheduled(cron = "0 0 9 * * ?")
     // @Scheduled(cron = "0 0/1 * * * ?")
     public void task() {
         log.info("开始纪念日定时任务");
-        List<MemorialDayTask> memorialDayTaskList = memorialDayTaskService.listAll();
+        List<MemorialDayTask> memorialDayTaskList = memorialDayTaskRepository.listAll();
         if (CollectionUtil.isEmpty(memorialDayTaskList)) {
             log.info("暂无数据");
             return;
         }
-        List<AggreNotifyBO> notifyList = Lists.newArrayListWithCapacity(memorialDayTaskList.size() * 3);
+        List<AggreNotifyBO> notifyList = new ArrayList<>();
         for (MemorialDayTask dayTask : memorialDayTaskList) {
             this.dealWithData(dayTask, notifyList);
         }
@@ -55,11 +59,14 @@ public class AnniversaryScheduler {
         log.info("纪念日定时任务执行完成");
     }
 
+    /**
+     * 处理单条纪念日任务，根据事件类型匹配对应工厂并计算通知消息。
+     */
     private void dealWithData(MemorialDayTask task, List<AggreNotifyBO> notifyList) {
         log.info("当前处理数据: task={}", JSONUtil.toJsonStr(task));
-        int statusRemind = task.getStatusRemind();
-        if (statusRemind == 0) {
-            log.info("当前时间无需提醒,data={}", JSONUtil.toJsonStr(task));
+        EnableStatusEnum statusRemind = EnableStatusEnum.getByCode(task.getStatusRemind());
+        if (EnableStatusEnum.DISABLE == statusRemind) {
+            log.info("当前事件无需提醒,data={}", JSONUtil.toJsonStr(task));
             return;
         }
         MemorialDayTaskBO taskBO = MemorialDayTaskBO.from(task);

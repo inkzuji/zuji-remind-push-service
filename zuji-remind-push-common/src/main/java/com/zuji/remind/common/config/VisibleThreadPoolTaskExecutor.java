@@ -2,9 +2,9 @@ package com.zuji.remind.common.config;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import org.springframework.util.concurrent.ListenableFuture;
 
 import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -24,6 +24,11 @@ public class VisibleThreadPoolTaskExecutor extends ThreadPoolTaskExecutor {
     }
 
 
+    /**
+     * 打印线程池运行状态信息。
+     *
+     * @param prefix 操作前缀描述
+     */
     private void showThreadPoolInfo(String prefix) {
         ThreadPoolExecutor threadPoolExecutor = getThreadPoolExecutor();
         log.info("{}, {}, 当前已提交数量[{}], 当前已完成数量[{}], 当前线程数量[{}], 当前队列数量[{}]",
@@ -60,14 +65,14 @@ public class VisibleThreadPoolTaskExecutor extends ThreadPoolTaskExecutor {
     }
 
     @Override
-    public ListenableFuture<?> submitListenable(Runnable task) {
-        showThreadPoolInfo("1. do submitListenable");
-        return super.submitListenable(task);
+    public CompletableFuture<Void> submitCompletable(Runnable task) {
+        showThreadPoolInfo("1. do submitCompletable");
+        return super.submitCompletable(task);
     }
 
     @Override
-    public <T> ListenableFuture<T> submitListenable(Callable<T> task) {
-        showThreadPoolInfo("2. do submitListenable");
-        return super.submitListenable(task);
+    public <T> CompletableFuture<T> submitCompletable(Callable<T> task) {
+        showThreadPoolInfo("2. do submitCompletable");
+        return super.submitCompletable(task);
     }
 }

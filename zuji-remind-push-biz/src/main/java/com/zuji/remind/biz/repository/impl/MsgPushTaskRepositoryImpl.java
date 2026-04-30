@@ -1,14 +1,14 @@
-package com.zuji.remind.biz.service.db.impl;
+package com.zuji.remind.biz.repository.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.zuji.remind.biz.entity.MsgPushTask;
-import com.zuji.remind.biz.mapper.MsgPushTaskMapper;
+import com.zuji.remind.biz.dao.entity.MsgPushTask;
+import com.zuji.remind.biz.dao.mapper.MsgPushTaskMapper;
 import com.zuji.remind.biz.model.bo.MsgPushTaskBO;
-import com.zuji.remind.biz.service.db.MsgPushTaskService;
-import org.springframework.stereotype.Service;
+import com.zuji.remind.biz.repository.MsgPushTaskRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -22,8 +22,8 @@ import java.util.stream.Collectors;
  * @author inkzuji@gmail.com
  * @since 2023-12-20 17:20
  **/
-@Service
-public class MsgPushTaskServiceImpl extends ServiceImpl<MsgPushTaskMapper, MsgPushTask> implements MsgPushTaskService {
+@Repository
+public class MsgPushTaskRepositoryImpl extends ServiceImpl<MsgPushTaskMapper, MsgPushTask> implements MsgPushTaskRepository {
 
     @Override
     public MsgPushTask getOneById(Long id) {

@@ -8,13 +8,13 @@ import com.zuji.remind.biz.model.bo.MsgPushWayBO;
 import com.zuji.remind.common.api.CommonResult;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 
 /**
  * 钉钉推送.
@@ -48,7 +48,6 @@ public class DingDingPushClient {
             if (!response.isSuccess()) {
                 return CommonResult.failed(response.getErrmsg());
             }
-            log.info("推送钉钉消息, response={}", response.getBody());
             return CommonResult.success();
         } catch (Exception e) {
             log.error("推送钉钉消息失败, errMsg={}", e.getMessage(), e);
@@ -69,7 +68,7 @@ public class DingDingPushClient {
             Mac instance = Mac.getInstance(DEFAULT_ALGORITHM);
             instance.init(new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), DEFAULT_ALGORITHM));
             byte[] signData = instance.doFinal(toSign.getBytes(StandardCharsets.UTF_8));
-            String sign = URLEncoder.encode(new String(Base64.encodeBase64(signData)), "UTF-8");
+            String sign = URLEncoder.encode(Base64.getEncoder().encodeToString(signData), "UTF-8");
             log.info("生成签名: timestamp={},secret={},sign={}", timestamp, secret, sign);
             return sign;
         } catch (Exception e) {

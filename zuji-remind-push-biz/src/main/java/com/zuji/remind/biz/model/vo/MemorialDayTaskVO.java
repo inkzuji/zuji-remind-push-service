@@ -1,10 +1,11 @@
 package com.zuji.remind.biz.model.vo;
 
-import com.zuji.remind.biz.entity.MemorialDayTask;
+import com.zuji.remind.biz.dao.entity.MemorialDayTask;
 import com.zuji.remind.common.api.ResultCode;
 import com.zuji.remind.common.exception.Asserts;
 import lombok.Data;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 /**
@@ -17,8 +18,9 @@ public class MemorialDayTaskVO {
 
     @Data
     public static class TaskVO implements Serializable {
+        @Serial
         private static final long serialVersionUID = -8765735527549283442L;
-        
+
         private Long id;
 
         /**

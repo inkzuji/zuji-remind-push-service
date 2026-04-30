@@ -45,6 +45,12 @@ public enum TaskStatusEnum {
         this.code = code;
     }
 
+    /**
+     * 根据编码获取任务状态枚举。
+     *
+     * @param code 状态编码
+     * @return 任务状态枚举，未匹配返回null
+     */
     public static TaskStatusEnum getByCode(int code) {
         return Stream.of(TaskStatusEnum.values())
                 .filter(v -> v.getCode() == code)

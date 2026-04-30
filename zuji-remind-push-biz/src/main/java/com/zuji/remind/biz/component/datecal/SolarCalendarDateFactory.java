@@ -3,7 +3,6 @@ package com.zuji.remind.biz.component.datecal;
 import cn.hutool.core.date.ChineseDate;
 import cn.hutool.core.date.LocalDateTimeUtil;
 import com.zuji.remind.biz.enums.DateTypeEnum;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.time.LocalDate;
 
@@ -24,14 +23,14 @@ public class SolarCalendarDateFactory extends AbstractDateFactory {
     }
 
     @Override
-    public ImmutablePair<LocalDate, ChineseDate> analyzeCurrentNotifyDate(String storageDate, boolean isLeapMonth) {
+    public DateBO calculateCurrentDate(String storageDate, boolean isLeapMonth) {
         LocalDate storageLocalDate = LocalDateTimeUtil.parseDate(storageDate, DEFAULT_DATE_FORMAT);
         ChineseDate chineseDate = new ChineseDate(storageLocalDate);
-        return ImmutablePair.of(storageLocalDate, chineseDate);
+        return new DateBO(storageLocalDate, chineseDate);
     }
 
     @Override
-    public ImmutablePair<LocalDate, ChineseDate> analyzeNextNotifyDate(String storageDate, boolean isLeapMonth) {
+    public DateBO calculateNextDate(String storageDate, boolean isLeapMonth) {
         LocalDate now = LocalDate.now();
         LocalDate storageLocalDate = LocalDateTimeUtil.parseDate(storageDate, DEFAULT_DATE_FORMAT);
         LocalDate nextLocalDate = storageLocalDate.withYear(now.getYear());
@@ -41,6 +40,6 @@ public class SolarCalendarDateFactory extends AbstractDateFactory {
             nextLocalDate = nextLocalDate.plusYears(ONE_LONG);
         }
         ChineseDate chineseDate = new ChineseDate(nextLocalDate);
-        return ImmutablePair.of(nextLocalDate, chineseDate);
+        return new DateBO(nextLocalDate, chineseDate);
     }
 }

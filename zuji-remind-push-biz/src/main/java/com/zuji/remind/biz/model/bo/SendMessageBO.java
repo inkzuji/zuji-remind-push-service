@@ -3,6 +3,7 @@ package com.zuji.remind.biz.model.bo;
 import com.dingtalk.api.request.OapiRobotSendRequest;
 import lombok.Data;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 /**
@@ -13,6 +14,7 @@ import java.io.Serializable;
  **/
 @Data
 public class SendMessageBO implements Serializable {
+    @Serial
     private static final long serialVersionUID = 5283627186026914689L;
 
     /**

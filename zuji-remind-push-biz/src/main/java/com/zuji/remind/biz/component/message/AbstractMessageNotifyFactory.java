@@ -14,8 +14,6 @@ public abstract class AbstractMessageNotifyFactory {
 
     /**
      * 通知方式。
-     *
-     * @return.
      */
     abstract RemindWayEnum getRemindWay();
 

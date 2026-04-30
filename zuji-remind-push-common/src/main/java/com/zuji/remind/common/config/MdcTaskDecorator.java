@@ -16,6 +16,9 @@ import java.util.Map;
  **/
 public class MdcTaskDecorator implements TaskDecorator {
 
+    /**
+     * 装饰 Runnable，将父线程的 MDC 上下文传播到异步线程中。
+     */
     @Override
     public Runnable decorate(Runnable runnable) {
         Map<String, String> map = MDC.getCopyOfContextMap();

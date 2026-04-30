@@ -1,13 +1,14 @@
 package com.zuji.remind.biz.model.dto;
 
-import com.zuji.remind.biz.entity.MemorialDayTask;
+import com.zuji.remind.biz.dao.entity.MemorialDayTask;
 import com.zuji.remind.common.exception.Asserts;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -24,6 +25,7 @@ public class MemorialDayTaskDTO {
      */
     @Data
     public static class SaveTaskDTO implements Serializable {
+        @Serial
         private static final long serialVersionUID = 7083428864879474409L;
 
         /**

@@ -18,6 +18,9 @@ public class WeChatMessageNotifyServiceImpl extends AbstractMessageNotifyFactory
         return RemindWayEnum.WECHAT;
     }
 
+    /**
+     * 发送微信消息（当前为空实现）。
+     */
     @Override
     public CommonResult<Void> send(SendMessageBO bo) {
         return CommonResult.success();

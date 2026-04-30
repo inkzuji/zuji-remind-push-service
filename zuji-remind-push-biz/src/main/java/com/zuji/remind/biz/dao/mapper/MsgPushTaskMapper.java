@@ -1,7 +1,7 @@
-package com.zuji.remind.biz.mapper;
+package com.zuji.remind.biz.dao.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.zuji.remind.biz.entity.MsgPushTask;
+import com.zuji.remind.biz.dao.entity.MsgPushTask;
 
 /**
  * 消息推送任务.

@@ -1,4 +1,4 @@
-package com.zuji.remind.biz.entity;
+package com.zuji.remind.biz.dao.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -15,6 +16,7 @@ import java.util.Date;
 @Data
 @TableName(value = "msg_push_way")
 public class MsgPushWay implements Serializable {
+    @Serial
     private static final long serialVersionUID = 6254623331722133807L;
 
     /**

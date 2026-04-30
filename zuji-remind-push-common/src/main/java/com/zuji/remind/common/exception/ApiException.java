@@ -2,6 +2,8 @@ package com.zuji.remind.common.exception;
 
 import com.zuji.remind.common.api.IErrorCode;
 
+import java.io.Serial;
+
 /**
  * 自定义异常.
  *
@@ -9,6 +11,7 @@ import com.zuji.remind.common.api.IErrorCode;
  * @create 2023-09-22 23:29
  **/
 public class ApiException extends RuntimeException {
+    @Serial
     private static final long serialVersionUID = -1810598636300210384L;
     private IErrorCode errorCode;
 

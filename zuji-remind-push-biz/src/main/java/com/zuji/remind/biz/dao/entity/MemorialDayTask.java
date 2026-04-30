@@ -1,4 +1,4 @@
-package com.zuji.remind.biz.entity;
+package com.zuji.remind.biz.dao.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
@@ -18,6 +19,7 @@ import java.time.LocalDateTime;
 @Data
 @TableName(value = "memorial_day_task")
 public class MemorialDayTask implements Serializable {
+    @Serial
     private static final long serialVersionUID = -1617432914419346997L;
     /**
      * 主键

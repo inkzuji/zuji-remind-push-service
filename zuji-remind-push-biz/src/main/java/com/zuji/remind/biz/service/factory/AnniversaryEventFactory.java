@@ -1,14 +1,9 @@
 package com.zuji.remind.biz.service.factory;
 
-import cn.hutool.core.date.ChineseDate;
-import com.dingtalk.api.request.OapiRobotSendRequest;
 import com.zuji.remind.biz.component.datecal.AbstractDateFactory;
-import com.zuji.remind.biz.component.notify.AbstractNotifyFactory;
 import com.zuji.remind.biz.model.bo.EventContextBO;
-import com.zuji.remind.biz.model.bo.MailBO;
-import com.zuji.remind.biz.untils.DateUtils;
+import com.zuji.remind.biz.utils.DateUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -28,52 +23,28 @@ import static com.zuji.remind.common.constant.CommonConstant.ZERO_LONG;
 public class AnniversaryEventFactory extends AbstractEventFactory {
 
     @Override
+    protected String getEventTitle() {
+        return "纪念日提醒";
+    }
+
+    @Override
     void calculateDate(EventContextBO contextBO) {
         AbstractDateFactory dateFactory = contextBO.getDateFactory();
         EventContextBO.OriginalDB originalDB = contextBO.getOriginalDB();
-        ImmutablePair<LocalDate, ChineseDate> recordDatePair = dateFactory.analyzeCurrentNotifyDate(originalDB.getMemorialDate(), originalDB.getIsLeapMonth());
-        ImmutablePair<LocalDate, ChineseDate> nextDatePair = dateFactory.analyzeNextNotifyDate(originalDB.getMemorialDate(), originalDB.getIsLeapMonth());
+        AbstractDateFactory.DateBO recordDateBO = dateFactory.calculateCurrentDate(originalDB.getMemorialDate(), originalDB.getIsLeapMonth());
+        AbstractDateFactory.DateBO nextDateBO = dateFactory.calculateNextDate(originalDB.getMemorialDate(), originalDB.getIsLeapMonth());
         EventContextBO.CalculateResultBO calculateResultBO = contextBO.getCalculateResultBO();
-        calculateResultBO.setRecordDate(recordDatePair.getLeft());
-        calculateResultBO.setRecordChineseDate(recordDatePair.getRight());
-        calculateResultBO.setThisYearDate(nextDatePair.getLeft());
-        calculateResultBO.setThisYearChineseDate(nextDatePair.getRight());
-    }
-
-    @Override
-    void calculateNotify(EventContextBO contextBO) {
-        AbstractNotifyFactory notifyFactory = contextBO.getNotifyFactory();
-        EventContextBO.OriginalDB originalDB = contextBO.getOriginalDB();
-        EventContextBO.CalculateResultBO calculateResultBO = contextBO.getCalculateResultBO();
-        ImmutablePair<Boolean, Long> notifyResult = notifyFactory.analyzeIsNotify(calculateResultBO.getThisYearDate(), originalDB.getRemindTimes());
-        calculateResultBO.setIsNotify(notifyResult.getLeft());
-        calculateResultBO.setIntervalDays(notifyResult.getRight());
-    }
-
-    @Override
-    MailBO getEmailBO(String body) {
-        MailBO bo = new MailBO();
-        bo.setSubject("纪念日提醒");
-        bo.setText(String.format("<h3>纪念日提醒</h3> %s", body));
-        return bo;
-    }
-
-    @Override
-    OapiRobotSendRequest getDingDingMessageBody(String body) {
-        OapiRobotSendRequest.Markdown markdown = new OapiRobotSendRequest.Markdown();
-        markdown.setTitle("纪念日提醒");
-        markdown.setText(String.format("## 纪念日提醒  \n  %s", body));
-        OapiRobotSendRequest sendRequest = new OapiRobotSendRequest();
-        sendRequest.setMsgtype("markdown");
-        sendRequest.setMarkdown(markdown);
-        return sendRequest;
+        calculateResultBO.setRecordDate(recordDateBO.solarDate());
+        calculateResultBO.setRecordChineseDate(recordDateBO.lunarDate());
+        calculateResultBO.setThisYearDate(nextDateBO.solarDate());
+        calculateResultBO.setThisYearChineseDate(nextDateBO.lunarDate());
     }
 
     @Override
     String getEmailMsgContent(EventContextBO contextBO) {
         EventContextBO.OriginalDB originalDB = contextBO.getOriginalDB();
         EventContextBO.CalculateResultBO calculateResultBO = contextBO.getCalculateResultBO();
-        StringBuffer bf = new StringBuffer();
+        StringBuilder bf = new StringBuilder();
         bf.append("<p>").append(originalDB.getName()).append("</p>");
         if (calculateResultBO.getIntervalDays() > ZERO_LONG) {
             bf.append("<p>已经").append(calculateResultBO.getRecordDate().until(LocalDate.now(), ChronoUnit.DAYS)).append("天了！</p>");

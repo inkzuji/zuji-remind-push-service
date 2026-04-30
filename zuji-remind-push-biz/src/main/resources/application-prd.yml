@@ -24,7 +24,6 @@ spring:
       connection-test-query: SELECT 1
   mail:
     default-encoding: utf-8
-    jndi-name: "mail/Session"
     properties:
       "[mail.smtp.auth]": true
       "[mail.smtp.ssl.enable]": true

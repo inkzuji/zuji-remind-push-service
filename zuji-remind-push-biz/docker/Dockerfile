@@ -1,4 +1,4 @@
-FROM openjdk:11-jre AS PROD
+FROM eclipse-temurin:25-jre AS PROD
 RUN mkdir /app
 COPY ../target/zuji-remind-push-biz-*.jar /app/app.jar
 WORKDIR /app

@@ -25,6 +25,9 @@ public class ExecutorConfig {
     private static final int DEFAULT_AWAIT_TERMINATION_SECONDS = 60;
 
 
+    /**
+     * 公共线程池配置，核心线程5、最大线程5、队列容量200，拒绝策略为调用者线程执行。
+     */
     @Bean("commonThreadPoolExecutor")
     public ThreadPoolTaskExecutor commonThreadPoolExecutor() {
         ThreadPoolTaskExecutor executor = new VisibleThreadPoolTaskExecutor();

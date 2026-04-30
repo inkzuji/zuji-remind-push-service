@@ -11,8 +11,8 @@ import com.zuji.remind.biz.model.bo.MailBO;
 import com.zuji.remind.biz.model.bo.MsgPushTaskBO;
 import com.zuji.remind.biz.model.bo.MsgPushWayBO;
 import com.zuji.remind.biz.model.bo.SendMessageBO;
-import com.zuji.remind.biz.service.db.MsgPushTaskService;
-import com.zuji.remind.biz.service.db.MsgPushWayService;
+import com.zuji.remind.biz.repository.MsgPushTaskRepository;
+import com.zuji.remind.biz.repository.MsgPushWayRepository;
 import com.zuji.remind.common.api.CommonResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
@@ -35,16 +35,19 @@ import static com.zuji.remind.biz.enums.TaskStatusEnum.PUSH_MSG_SCHEDULER_STATUS
 @Slf4j
 @Component
 public class PushMessageScheduler {
-    private final MsgPushTaskService msgPushTaskService;
-    private final MsgPushWayService msgPushWayService;
+    private final MsgPushTaskRepository msgPushTaskRepository;
+    private final MsgPushWayRepository msgPushWayRepository;
     private final MessageNotifyComponent messageNotifyComponent;
 
-    public PushMessageScheduler(MsgPushTaskService msgPushTaskService, MsgPushWayService msgPushWayService, MessageNotifyComponent messageNotifyComponent) {
-        this.msgPushTaskService = msgPushTaskService;
-        this.msgPushWayService = msgPushWayService;
+    public PushMessageScheduler(MsgPushTaskRepository msgPushTaskRepository, MsgPushWayRepository msgPushWayRepository, MessageNotifyComponent messageNotifyComponent) {
+        this.msgPushTaskRepository = msgPushTaskRepository;
+        this.msgPushWayRepository = msgPushWayRepository;
         this.messageNotifyComponent = messageNotifyComponent;
     }
 
+    /**
+     * 推送消息定时任务，每 5 分钟执行，扫描待发送消息并执行推送。
+     */
     @Async("commonThreadPoolExecutor")
     @Scheduled(cron = "0 */5 * * * ?")
     public void task() {
@@ -52,13 +55,13 @@ public class PushMessageScheduler {
         // 每次定时只获取20条数据
         long limit = 20L;
 
-        List<MsgPushTaskBO> taskBOList = msgPushTaskService.listBatchByStatus(PUSH_MSG_SCHEDULER_STATUS_LIST, null, limit);
+        List<MsgPushTaskBO> taskBOList = msgPushTaskRepository.listBatchByStatus(PUSH_MSG_SCHEDULER_STATUS_LIST, null, limit);
         if (CollectionUtil.isEmpty(taskBOList)) {
             log.info("未查询到需要推送的消息");
             return;
         }
 
-        List<MsgPushWayBO> pushWayList = msgPushWayService.listAll();
+        List<MsgPushWayBO> pushWayList = msgPushWayRepository.listAll();
         Map<RemindWayEnum, MsgPushWayBO.WayBO> wayBOMap = pushWayList.stream()
                 .collect(Collectors.toMap(MsgPushWayBO::getPushType, MsgPushWayBO::getPushRequestParam));
 
@@ -74,6 +77,9 @@ public class PushMessageScheduler {
         log.info("推送消息定时任务执行结束");
     }
 
+    /**
+     * 处理单条推送任务，匹配推送渠道并发送消息。
+     */
     private void dealWithData(MsgPushTaskBO taskBO, Map<RemindWayEnum, MsgPushWayBO.WayBO> wayBOMap) {
         RemindWayEnum msgType = taskBO.getMsgType();
         MsgPushWayBO.WayBO wayBO = wayBOMap.get(msgType);
@@ -99,16 +105,22 @@ public class PushMessageScheduler {
         dealWithFailData(taskBO.getId(), JSONUtil.toJsonStr(result), taskBO.getFailNum());
     }
 
+    /**
+     * 处理推送成功的数据，更新状态为已发送。
+     */
     private void dealWithSuccessData(Long id, String msgResponse) {
-        msgPushTaskService.updateStatusById(id, TaskStatusEnum.SUCCESS.getCode(), msgResponse, null);
+        msgPushTaskRepository.updateStatusById(id, TaskStatusEnum.SUCCESS.getCode(), msgResponse, null);
     }
 
+    /**
+     * 处理推送失败的数据，累计失败次数，超过 20 次标记为永久失败。
+     */
     private void dealWithFailData(Long id, String msgResponse, Integer failNum) {
         TaskStatusEnum statusEnum = TaskStatusEnum.FAIL_TRIED_AGAIN_SEND;
         failNum = failNum + 1;
         if (failNum > 20) {
             statusEnum = TaskStatusEnum.FAIL_SEND;
         }
-        msgPushTaskService.updateStatusById(id, statusEnum.getCode(), msgResponse, failNum);
+        msgPushTaskRepository.updateStatusById(id, statusEnum.getCode(), msgResponse, failNum);
     }
 }

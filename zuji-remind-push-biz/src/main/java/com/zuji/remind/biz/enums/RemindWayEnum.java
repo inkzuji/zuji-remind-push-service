@@ -32,6 +32,12 @@ public enum RemindWayEnum {
         this.code = code;
     }
 
+    /**
+     * 根据编码获取提醒方式枚举。
+     *
+     * @param code 提醒方式编码
+     * @return 提醒方式枚举
+     */
     public static RemindWayEnum getByCode(int code) {
         for (RemindWayEnum wayEnum : RemindWayEnum.values()) {
             if (wayEnum.getCode() == code) {

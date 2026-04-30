@@ -1,12 +1,12 @@
-package com.zuji.remind.biz.service.db.impl;
+package com.zuji.remind.biz.repository.impl;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.zuji.remind.biz.entity.MemorialDayTask;
-import com.zuji.remind.biz.mapper.MemorialDayTaskMapper;
-import com.zuji.remind.biz.service.db.MemorialDayTaskService;
+import com.zuji.remind.biz.dao.entity.MemorialDayTask;
+import com.zuji.remind.biz.dao.mapper.MemorialDayTaskMapper;
+import com.zuji.remind.biz.repository.MemorialDayTaskRepository;
 import com.zuji.remind.common.exception.Asserts;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Objects;
@@ -17,8 +17,8 @@ import java.util.Objects;
  * @author inkzuji@gmail.com
  * @create 2023-09-11 22:07
  **/
-@Service
-public class MemorialDayTaskServiceImpl extends ServiceImpl<MemorialDayTaskMapper, MemorialDayTask> implements MemorialDayTaskService {
+@Repository
+public class MemorialDayTaskRepositoryImpl extends ServiceImpl<MemorialDayTaskMapper, MemorialDayTask> implements MemorialDayTaskRepository {
 
     @Override
     public List<MemorialDayTask> listAll() {

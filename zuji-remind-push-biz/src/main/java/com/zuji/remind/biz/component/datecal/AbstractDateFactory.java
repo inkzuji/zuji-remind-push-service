@@ -2,7 +2,6 @@ package com.zuji.remind.biz.component.datecal;
 
 import cn.hutool.core.date.ChineseDate;
 import com.zuji.remind.biz.enums.DateTypeEnum;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.time.LocalDate;
 
@@ -14,15 +13,18 @@ import java.time.LocalDate;
  **/
 public abstract class AbstractDateFactory {
 
+    /**
+     * 根据日期类型获取对应的日期计算工厂实例。
+     *
+     * @param type 日期类型枚举
+     * @return 日期计算工厂实例
+     */
     public static AbstractDateFactory getInstance(DateTypeEnum type) {
-        switch (type) {
-            case SOLAR_CALENDAR:
-                return new SolarCalendarDateFactory();
-            case LUNAR_CALENDAR:
-                return new LunarCalendarDateFactory();
-            default:
-                throw new RuntimeException("暂不支持[" + type + "]类型");
-        }
+        return switch (type) {
+            case SOLAR_CALENDAR -> new SolarCalendarDateFactory();
+            case LUNAR_CALENDAR -> new LunarCalendarDateFactory();
+            default -> throw new RuntimeException("暂不支持[" + type + "]类型");
+        };
     }
 
     /**
@@ -39,7 +41,7 @@ public abstract class AbstractDateFactory {
      * @param isLeapMonth 是否是闰月
      * @return left=阳历, right=阴历
      */
-    public abstract ImmutablePair<LocalDate, ChineseDate> analyzeCurrentNotifyDate(String storageDate, boolean isLeapMonth);
+    public abstract DateBO calculateCurrentDate(String storageDate, boolean isLeapMonth);
 
     /**
      * 计算下一个通知日期。
@@ -49,5 +51,9 @@ public abstract class AbstractDateFactory {
      * @param isLeapMonth 是否是闰月
      * @return left=阳历, right=阴历
      */
-    public abstract ImmutablePair<LocalDate, ChineseDate> analyzeNextNotifyDate(String storageDate, boolean isLeapMonth);
+    public abstract DateBO calculateNextDate(String storageDate, boolean isLeapMonth);
+
+    public record DateBO(LocalDate solarDate, ChineseDate lunarDate) {
+    }
+
 }

@@ -1,10 +1,11 @@
-package com.zuji.remind.biz.entity;
+package com.zuji.remind.biz.dao.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
@@ -17,6 +18,7 @@ import java.time.LocalDateTime;
 @Data
 @TableName(value = "msg_push_task")
 public class MsgPushTask implements Serializable {
+    @Serial
     private static final long serialVersionUID = -3456536366528493683L;
     /**
      * 主键

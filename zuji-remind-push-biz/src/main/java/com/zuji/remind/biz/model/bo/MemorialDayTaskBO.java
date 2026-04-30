@@ -1,13 +1,14 @@
 package com.zuji.remind.biz.model.bo;
 
 import cn.hutool.core.util.StrUtil;
-import com.zuji.remind.biz.entity.MemorialDayTask;
+import com.zuji.remind.biz.dao.entity.MemorialDayTask;
 import com.zuji.remind.biz.enums.DateTypeEnum;
 import com.zuji.remind.biz.enums.EnableStatusEnum;
 import com.zuji.remind.biz.enums.EventTypeEnum;
 import com.zuji.remind.biz.enums.RemindWayEnum;
 import lombok.Data;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
  **/
 @Data
 public class MemorialDayTaskBO implements Serializable {
+    @Serial
     private static final long serialVersionUID = 5208506487578832523L;
 
     /**

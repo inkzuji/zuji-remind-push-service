@@ -30,6 +30,9 @@ public class EmailMessageNotifyServiceImpl extends AbstractMessageNotifyFactory 
         return RemindWayEnum.EMAIL;
     }
 
+    /**
+     * 发送邮件消息。
+     */
     @Override
     public CommonResult<Void> send(SendMessageBO bo) {
         MailBO mailBO = bo.getMailBO();

@@ -29,6 +29,9 @@ public class DingDingMessageNotifyServiceImpl extends AbstractMessageNotifyFacto
         return RemindWayEnum.DING_DING;
     }
 
+    /**
+     * 发送钉钉机器人消息。
+     */
     @Override
     public CommonResult<Void> send(SendMessageBO bo) {
         MsgPushWayBO.DingDingBO wayBO = (MsgPushWayBO.DingDingBO) bo.getWayBO();

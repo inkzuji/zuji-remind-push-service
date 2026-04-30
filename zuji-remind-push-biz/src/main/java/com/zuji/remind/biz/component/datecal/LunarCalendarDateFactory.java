@@ -4,7 +4,6 @@ import cn.hutool.core.date.ChineseDate;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import com.zuji.remind.biz.enums.DateTypeEnum;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.time.LocalDate;
 
@@ -22,15 +21,15 @@ public class LunarCalendarDateFactory extends AbstractDateFactory {
     }
 
     @Override
-    public ImmutablePair<LocalDate, ChineseDate> analyzeCurrentNotifyDate(String storageDate, boolean isLeapMonth) {
+    public DateBO calculateCurrentDate(String storageDate, boolean isLeapMonth) {
         String[] dates = storageDate.split(StrUtil.DASHED);
         ChineseDate storageChineseDate = new ChineseDate(Integer.parseInt(dates[0]), Integer.parseInt(dates[1]), Integer.parseInt(dates[2]), isLeapMonth);
         LocalDate storageLocalDate = DateUtil.toLocalDateTime(storageChineseDate.getGregorianDate()).toLocalDate();
-        return ImmutablePair.of(storageLocalDate, storageChineseDate);
+        return new DateBO(storageLocalDate, storageChineseDate);
     }
 
     @Override
-    public ImmutablePair<LocalDate, ChineseDate> analyzeNextNotifyDate(String storageDate, boolean isLeapMonth) {
+    public DateBO calculateNextDate(String storageDate, boolean isLeapMonth) {
         LocalDate now = LocalDate.now();
         String[] dates = storageDate.split(StrUtil.DASHED);
         ChineseDate storageChineseDate = new ChineseDate(Integer.parseInt(dates[0]), Integer.parseInt(dates[1]), Integer.parseInt(dates[2]), isLeapMonth);
@@ -43,6 +42,6 @@ public class LunarCalendarDateFactory extends AbstractDateFactory {
             nextNotifyChineseDate = new ChineseDate(chineseYear + 1, nextNotifyChineseDate.getMonth(), nextNotifyChineseDate.getDay());
             nextNotifyLocalDate = DateUtil.toLocalDateTime(nextNotifyChineseDate.getGregorianDate()).toLocalDate();
         }
-        return ImmutablePair.of(nextNotifyLocalDate, nextNotifyChineseDate);
+        return new DateBO(nextNotifyLocalDate, nextNotifyChineseDate);
     }
 }

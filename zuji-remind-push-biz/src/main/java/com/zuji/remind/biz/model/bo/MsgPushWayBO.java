@@ -1,12 +1,13 @@
 package com.zuji.remind.biz.model.bo;
 
 import cn.hutool.json.JSONUtil;
-import com.zuji.remind.biz.entity.MsgPushWay;
+import com.zuji.remind.biz.dao.entity.MsgPushWay;
 import com.zuji.remind.biz.enums.RemindWayEnum;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 /**
@@ -14,6 +15,7 @@ import java.io.Serializable;
  */
 @Data
 public class MsgPushWayBO implements Serializable {
+    @Serial
     private static final long serialVersionUID = -7117787284498933424L;
 
     /**
@@ -33,6 +35,7 @@ public class MsgPushWayBO implements Serializable {
 
     @Data
     public abstract static class WayBO implements Serializable {
+        @Serial
         private static final long serialVersionUID = 8064145450001775052L;
     }
 
@@ -40,6 +43,7 @@ public class MsgPushWayBO implements Serializable {
     @EqualsAndHashCode(callSuper = true)
     @ToString(callSuper = true)
     public static class EmailWayBO extends WayBO {
+        @Serial
         private static final long serialVersionUID = 5870942945199307763L;
         /**
          * 收件人。
@@ -56,6 +60,7 @@ public class MsgPushWayBO implements Serializable {
     @EqualsAndHashCode(callSuper = true)
     @ToString(callSuper = true)
     public static class DingDingBO extends WayBO {
+        @Serial
         private static final long serialVersionUID = 3535657997739696613L;
         private String url;
         private String accessToken;
@@ -66,7 +71,7 @@ public class MsgPushWayBO implements Serializable {
     @EqualsAndHashCode(callSuper = true)
     @ToString(callSuper = true)
     public static class WechatBO extends WayBO {
-
+        @Serial
         private static final long serialVersionUID = 435055194309271393L;
     }
 
@@ -80,15 +85,11 @@ public class MsgPushWayBO implements Serializable {
     }
 
     public static WayBO convert(RemindWayEnum remindWayEnum, String context) {
-        switch (remindWayEnum) {
-            case EMAIL:
-                return JSONUtil.toBean(context, EmailWayBO.class);
-            case DING_DING:
-                return JSONUtil.toBean(context, DingDingBO.class);
-            case WECHAT:
-                return JSONUtil.toBean(context, WechatBO.class);
-            default:
-                throw new RuntimeException("暂不支持该类型");
-        }
+        return switch (remindWayEnum) {
+            case EMAIL -> JSONUtil.toBean(context, EmailWayBO.class);
+            case DING_DING -> JSONUtil.toBean(context, DingDingBO.class);
+            case WECHAT -> JSONUtil.toBean(context, WechatBO.class);
+            default -> throw new RuntimeException("暂不支持该类型");
+        };
     }
 }

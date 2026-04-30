@@ -4,6 +4,7 @@ server:
     context-path: /remind-push
   # 设置关闭方式为优雅关闭
   shutdown: graceful
+
 spring:
   # 优雅停机最大等待时间
   lifecycle:
@@ -17,4 +18,14 @@ logging:
     root: info
   file:
     path: ./logs
+
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+#  opentelemetry:
+#    tracing:
+#      export:
+#        otlp:
+#          endpoint: http://localhost:4318/v1/traces
 

@@ -1,17 +1,11 @@
 package com.zuji.remind.biz.service.factory;
 
-import cn.hutool.core.date.ChineseDate;
-import com.dingtalk.api.request.OapiRobotSendRequest;
 import com.zuji.remind.biz.component.datecal.AbstractDateFactory;
-import com.zuji.remind.biz.component.notify.AbstractNotifyFactory;
 import com.zuji.remind.biz.model.bo.EventContextBO;
-import com.zuji.remind.biz.model.bo.MailBO;
-import com.zuji.remind.biz.untils.DateUtils;
+import com.zuji.remind.biz.utils.DateUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,45 +19,22 @@ import static com.zuji.remind.common.constant.CommonConstant.ZERO_LONG;
  **/
 @Service
 public class CountdownEventFactory extends AbstractEventFactory {
+
+    @Override
+    protected String getEventTitle() {
+        return "倒计时提醒";
+    }
+
     @Override
     void calculateDate(EventContextBO contextBO) {
         AbstractDateFactory dateFactory = contextBO.getDateFactory();
         EventContextBO.OriginalDB originalDB = contextBO.getOriginalDB();
-        ImmutablePair<LocalDate, ChineseDate> recordDatePair = dateFactory.analyzeCurrentNotifyDate(originalDB.getMemorialDate(), originalDB.getIsLeapMonth());
+        AbstractDateFactory.DateBO recordDateBO = dateFactory.calculateCurrentDate(originalDB.getMemorialDate(), originalDB.getIsLeapMonth());
         EventContextBO.CalculateResultBO calculateResultBO = contextBO.getCalculateResultBO();
-        calculateResultBO.setRecordDate(recordDatePair.getLeft());
-        calculateResultBO.setRecordChineseDate(recordDatePair.getRight());
-        calculateResultBO.setThisYearDate(recordDatePair.getLeft());
-        calculateResultBO.setThisYearChineseDate(recordDatePair.getRight());
-    }
-
-    @Override
-    void calculateNotify(EventContextBO contextBO) {
-        AbstractNotifyFactory notifyFactory = contextBO.getNotifyFactory();
-        EventContextBO.OriginalDB originalDB = contextBO.getOriginalDB();
-        EventContextBO.CalculateResultBO calculateResultBO = contextBO.getCalculateResultBO();
-        ImmutablePair<Boolean, Long> notifyResult = notifyFactory.analyzeIsNotify(calculateResultBO.getThisYearDate(), originalDB.getRemindTimes());
-        calculateResultBO.setIsNotify(notifyResult.getLeft());
-        calculateResultBO.setIntervalDays(notifyResult.getRight());
-    }
-
-    @Override
-    MailBO getEmailBO(String body) {
-        MailBO bo = new MailBO();
-        bo.setSubject("倒计时提醒");
-        bo.setText(String.format("<h3>倒计时提醒</h3> %s", body));
-        return bo;
-    }
-
-    @Override
-    OapiRobotSendRequest getDingDingMessageBody(String body) {
-        OapiRobotSendRequest.Markdown markdown = new OapiRobotSendRequest.Markdown();
-        markdown.setTitle("倒计时提醒");
-        markdown.setText(String.format("## 倒计时提醒  \n  %s", body));
-        OapiRobotSendRequest sendRequest = new OapiRobotSendRequest();
-        sendRequest.setMsgtype("markdown");
-        sendRequest.setMarkdown(markdown);
-        return sendRequest;
+        calculateResultBO.setRecordDate(recordDateBO.solarDate());
+        calculateResultBO.setRecordChineseDate(recordDateBO.lunarDate());
+        calculateResultBO.setThisYearDate(recordDateBO.solarDate());
+        calculateResultBO.setThisYearChineseDate(recordDateBO.lunarDate());
     }
 
     @Override
@@ -71,7 +42,7 @@ public class CountdownEventFactory extends AbstractEventFactory {
         EventContextBO.OriginalDB originalDB = contextBO.getOriginalDB();
         EventContextBO.CalculateResultBO calculateResultBO = contextBO.getCalculateResultBO();
 
-        StringBuffer bf = new StringBuffer();
+        StringBuilder bf = new StringBuilder();
         bf.append("<p>").append(originalDB.getName()).append("</p>");
         if (calculateResultBO.getIntervalDays() > ZERO_LONG) {
             bf.append(String.format("距离倒计时还有**%d**天！", calculateResultBO.getIntervalDays()));

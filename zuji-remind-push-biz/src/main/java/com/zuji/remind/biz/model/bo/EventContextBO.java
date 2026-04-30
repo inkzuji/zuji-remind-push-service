@@ -9,6 +9,7 @@ import com.zuji.remind.biz.enums.EventTypeEnum;
 import com.zuji.remind.biz.enums.RemindWayEnum;
 import lombok.Data;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.List;
@@ -21,6 +22,7 @@ import java.util.List;
  **/
 @Data
 public class EventContextBO implements Serializable {
+    @Serial
     private static final long serialVersionUID = 6534303007415909874L;
 
     private AbstractDateFactory dateFactory;
@@ -43,6 +45,7 @@ public class EventContextBO implements Serializable {
     @Data
     public static class OriginalDB implements Serializable {
 
+        @Serial
         private static final long serialVersionUID = -8070307350464381267L;
 
         /**

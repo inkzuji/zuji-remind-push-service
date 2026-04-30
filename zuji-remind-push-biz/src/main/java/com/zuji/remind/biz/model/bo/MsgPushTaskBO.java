@@ -1,10 +1,11 @@
 package com.zuji.remind.biz.model.bo;
 
-import com.zuji.remind.biz.entity.MsgPushTask;
+import com.zuji.remind.biz.dao.entity.MsgPushTask;
 import com.zuji.remind.biz.enums.RemindWayEnum;
 import com.zuji.remind.biz.enums.TaskStatusEnum;
 import lombok.Data;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
@@ -16,6 +17,7 @@ import java.time.LocalDateTime;
  **/
 @Data
 public class MsgPushTaskBO implements Serializable {
+    @Serial
     private static final long serialVersionUID = -5730366642572284320L;
 
     private Long id;

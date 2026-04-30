@@ -1,21 +1,14 @@
 package com.zuji.remind.biz.controller;
 
-import com.zuji.remind.biz.entity.MemorialDayTask;
+import com.zuji.remind.biz.dao.entity.MemorialDayTask;
 import com.zuji.remind.biz.model.dto.MemorialDayTaskDTO;
 import com.zuji.remind.biz.model.vo.MemorialDayTaskVO;
-import com.zuji.remind.biz.service.db.MemorialDayTaskService;
+import com.zuji.remind.biz.repository.MemorialDayTaskRepository;
 import com.zuji.remind.common.api.CommonResult;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,10 +21,10 @@ import java.util.stream.Collectors;
 @RequestMapping(value = "/api/memorialDay")
 @RestController
 public class MemorialDayTaskController {
-    private final MemorialDayTaskService memorialDayTaskService;
+    private final MemorialDayTaskRepository memorialDayTaskRepository;
 
-    public MemorialDayTaskController(MemorialDayTaskService memorialDayTaskService) {
-        this.memorialDayTaskService = memorialDayTaskService;
+    public MemorialDayTaskController(MemorialDayTaskRepository memorialDayTaskRepository) {
+        this.memorialDayTaskRepository = memorialDayTaskRepository;
     }
 
     /**
@@ -39,7 +32,7 @@ public class MemorialDayTaskController {
      */
     @GetMapping(value = "/list")
     public CommonResult<List<MemorialDayTaskVO.TaskVO>> list() {
-        List<MemorialDayTask> taskList = memorialDayTaskService.listAll();
+        List<MemorialDayTask> taskList = memorialDayTaskRepository.listAll();
         List<MemorialDayTaskVO.TaskVO> list = taskList.stream()
                 .map(MemorialDayTaskVO.TaskVO::from)
                 .collect(Collectors.toList());
@@ -50,8 +43,8 @@ public class MemorialDayTaskController {
      * 查询详情。
      */
     @GetMapping(value = "/detail/{id}")
-    public CommonResult<MemorialDayTaskVO.TaskVO> detail(@Valid @NotNull(message = "查询ID不能为空") @PathVariable("id") Long id) {
-        MemorialDayTask memorialDayTask = memorialDayTaskService.getById(id);
+    public CommonResult<MemorialDayTaskVO.TaskVO> detail(@PathVariable @Valid @NotNull(message = "查询ID不能为空") Long id) {
+        MemorialDayTask memorialDayTask = memorialDayTaskRepository.getById(id);
         return CommonResult.success(MemorialDayTaskVO.TaskVO.from(memorialDayTask));
     }
 
@@ -61,7 +54,7 @@ public class MemorialDayTaskController {
     @PostMapping(value = "/add")
     public CommonResult<Void> addOnce(@Valid @RequestBody MemorialDayTaskDTO.SaveTaskDTO dto) {
         MemorialDayTask memorialDayTask = MemorialDayTaskDTO.SaveTaskDTO.to(dto);
-        boolean result = memorialDayTaskService.insertOnce(memorialDayTask);
+        boolean result = memorialDayTaskRepository.insertOnce(memorialDayTask);
         return result ? CommonResult.success() : CommonResult.failed();
     }
 
@@ -69,10 +62,10 @@ public class MemorialDayTaskController {
      * 修改。
      */
     @PutMapping(value = "/{id}")
-    public CommonResult<Void> updateOnce(@Valid @NotNull(message = "更新ID不能为空") @PathVariable("id") Long id,
+    public CommonResult<Void> updateOnce(@PathVariable @Valid @NotNull(message = "更新ID不能为空") Long id,
                                          @Valid @RequestBody MemorialDayTaskDTO.SaveTaskDTO dto) {
         MemorialDayTask memorialDayTask = MemorialDayTaskDTO.SaveTaskDTO.to(dto);
-        boolean result = memorialDayTaskService.updateById(id, memorialDayTask);
+        boolean result = memorialDayTaskRepository.updateById(id, memorialDayTask);
         return result ? CommonResult.success() : CommonResult.failed();
     }
 
@@ -80,8 +73,8 @@ public class MemorialDayTaskController {
      * 删除。
      */
     @DeleteMapping(value = "/{id}")
-    public CommonResult<Void> deleteOnce(@Valid @NotNull(message = "删除ID不能为空") @PathVariable("id") Long id) {
-        boolean result = memorialDayTaskService.deleteById(id);
+    public CommonResult<Void> deleteOnce(@PathVariable @Valid @NotNull(message = "删除ID不能为空") Long id) {
+        boolean result = memorialDayTaskRepository.deleteById(id);
         return result ? CommonResult.success() : CommonResult.failed();
     }
 }

@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
@@ -44,6 +44,9 @@ import java.util.Map;
 public class WebLogAspect {
     private static final Logger LOGGER = LoggerFactory.getLogger(WebLogAspect.class);
 
+    /**
+     * 定义 Controller 层切点。
+     */
     @Pointcut("execution(public * com.zuji.remind.biz.controller.*.*(..))||execution(public * com.zuji.remind.*.controller.*.*(..))")
     public void webLog() {
     }
@@ -56,6 +59,9 @@ public class WebLogAspect {
     public void doAfterReturning(Object ret) throws Throwable {
     }
 
+    /**
+     * 环绕通知，记录请求和响应信息并输出日志。
+     */
     @Around("webLog()")
     public Object doAround(ProceedingJoinPoint joinPoint) throws Throwable {
         long startTime = System.currentTimeMillis();

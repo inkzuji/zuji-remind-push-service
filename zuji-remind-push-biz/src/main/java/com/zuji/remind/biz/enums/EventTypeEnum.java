@@ -24,6 +24,12 @@ public enum EventTypeEnum {
         this.factoryName = factoryName;
     }
 
+    /**
+     * 根据编码获取事件类型枚举。
+     *
+     * @param code 事件编码
+     * @return 事件类型枚举
+     */
     public static EventTypeEnum getByCode(int code) {
         for (EventTypeEnum typeEnum : EventTypeEnum.values()) {
             if (typeEnum.getCode() == code) {

@@ -26,6 +26,12 @@ public enum EnableStatusEnum {
 
     private final int code;
 
+    /**
+     * 根据编码获取启用状态枚举。
+     *
+     * @param code 状态编码
+     * @return 启用状态枚举，未匹配返回null
+     */
     public static EnableStatusEnum getByCode(int code) {
         return Stream.of(EnableStatusEnum.values())
                 .filter(v -> v.getCode() == code)
