@@ -1,6 +1,5 @@
 package com.zuji.remind.biz.config;
 
-import com.zuji.remind.common.config.VisibleThreadPoolTaskExecutor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
@@ -13,7 +12,7 @@ import java.util.concurrent.ThreadPoolExecutor;
  * ExecutorConfig.
  *
  * @author inkzuji@gmail.com
- * @create  2023-10-18 16:01
+ * @create 2023-10-18 16:01
  **/
 @Data
 @Slf4j
@@ -30,7 +29,7 @@ public class ExecutorConfig {
      */
     @Bean("commonThreadPoolExecutor")
     public ThreadPoolTaskExecutor commonThreadPoolExecutor() {
-        ThreadPoolTaskExecutor executor = new VisibleThreadPoolTaskExecutor();
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(DEFAULT_EXECUTOR_CORE_SIZE);
         executor.setMaxPoolSize(DEFAULT_EXECUTOR_MAX_SIZE);
         executor.setQueueCapacity(200);
