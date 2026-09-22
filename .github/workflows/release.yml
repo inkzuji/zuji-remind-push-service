@@ -1,20 +1,18 @@
 name: Release
 
 on:
-  push:
-    tags:
-      - 'v*'
+  workflow_dispatch:
 
 permissions:
   contents: read
 
-# 所有版本共享发布队列，避免并发更新 latest；不取消正在执行的发布。
-concurrency:
-  group: release
-  cancel-in-progress: false
-
 jobs:
   release:
+    if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' }}
+    # 仅 main 的发布任务进入队列，避免并发更新 latest。
+    concurrency:
+      group: release
+      cancel-in-progress: false
     runs-on: ubuntu-latest
     timeout-minutes: 45
     permissions:
@@ -25,19 +23,11 @@ jobs:
         shell: bash
     env:
       IMAGE_NAME: ghcr.io/inkzuji/zuji-remind-push-biz
-      RELEASE_TAG: ${{ github.ref_name }}
     steps:
       - name: Checkout
         uses: actions/checkout@v7
         with:
           persist-credentials: false
-
-      - name: Validate release tag
-        run: |
-          if [[ ! "$RELEASE_TAG" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
-            echo "::error::正式版本标签必须为 vX.Y.Z，且版本号不能含前导零"
-            exit 1
-          fi
 
       - name: Set up Java
         uses: actions/setup-java@v6
@@ -52,11 +42,12 @@ jobs:
           mvn --batch-mode --no-transfer-progress help:evaluate \
             -Dexpression=project.version -Doutput="$RUNNER_TEMP/project-version" -N
           version=$(cat "$RUNNER_TEMP/project-version")
-          if [[ "$RELEASE_TAG" != "v$version" ]]; then
-            echo "::error::标签 $RELEASE_TAG 与 Maven 版本 $version 不一致"
+          if [[ ! "$version" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
+            echo "::error::Maven 版本必须为 X.Y.Z，且版本号不能含前导零"
             exit 1
           fi
           echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "RELEASE_TAG=v$version" >> "$GITHUB_ENV"
 
       - name: Reject an existing release
         env:
@@ -175,5 +166,5 @@ jobs:
             "release-assets/zuji-remind-push-biz-$VERSION.jar" \
             release-assets/SHA256SUMS \
             --repo "$GITHUB_REPOSITORY" \
-            --verify-tag --title "$RELEASE_TAG" \
+            --target "$GITHUB_SHA" --title "$RELEASE_TAG" \
             --generate-notes --notes-file "$RUNNER_TEMP/release-notes.md"
