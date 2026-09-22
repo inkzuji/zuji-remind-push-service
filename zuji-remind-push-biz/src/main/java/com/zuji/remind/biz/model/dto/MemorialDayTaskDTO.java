@@ -1,6 +1,9 @@
 package com.zuji.remind.biz.model.dto;
 
+import cn.hutool.core.util.StrUtil;
 import com.zuji.remind.biz.dao.entity.MemorialDayTask;
+import com.zuji.remind.biz.enums.EnableStatusEnum;
+import com.zuji.remind.biz.enums.RemindWayEnum;
 import com.zuji.remind.common.exception.Asserts;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -67,7 +70,7 @@ public class MemorialDayTaskDTO {
         private String memorialDate;
 
         /**
-         * 是否提醒: 0=提醒; 1=不提醒;
+         * 是否提醒: 0=不提醒; 1=提醒;
          */
         @NotNull(message = "请选择是否提醒")
         @Min(value = 0, message = "请选择是否提醒")
@@ -75,12 +78,12 @@ public class MemorialDayTaskDTO {
         private Integer statusRemind;
 
         /**
-         * 提醒频率
+         * 提醒天数，多个整数以英文逗号分隔；启用提醒时必填。
          */
         private String remindTimes;
 
         /**
-         * 提醒方式: 1=邮箱;2=钉钉;3=微信;
+         * 提醒方式: 1=邮箱;2=钉钉，多个渠道以英文逗号分隔；启用提醒时必填。
          */
         private String remindWay;
 
@@ -88,6 +91,7 @@ public class MemorialDayTaskDTO {
             if (Objects.isNull(dto)) {
                 Asserts.fail("参数`dto`不能为空");
             }
+            dto.validateReminder();
             MemorialDayTask task = new MemorialDayTask();
             task.setEventType(dto.getEventType());
             task.setName(dto.getName());
@@ -99,6 +103,42 @@ public class MemorialDayTaskDTO {
             task.setRemindTimes(dto.getRemindTimes());
             task.setRemindWay(dto.getRemindWay());
             return task;
+        }
+
+        private void validateReminder() {
+            boolean enabled = Objects.equals(statusRemind, EnableStatusEnum.ENABLE.getCode());
+            if (StrUtil.isBlank(remindTimes)) {
+                if (enabled) {
+                    Asserts.fail("启用提醒时请输入提醒天数");
+                }
+            } else {
+                for (String day : remindTimes.split(StrUtil.COMMA, -1)) {
+                    try {
+                        Long.parseLong(day);
+                    } catch (NumberFormatException e) {
+                        Asserts.fail("提醒天数必须是英文逗号分隔的整数，且不能超出long范围");
+                    }
+                }
+            }
+
+            if (StrUtil.isBlank(remindWay)) {
+                if (enabled) {
+                    Asserts.fail("启用提醒时请选择提醒方式");
+                }
+            } else {
+                for (String way : remindWay.split(StrUtil.COMMA, -1)) {
+                    int code;
+                    try {
+                        code = Integer.parseInt(way);
+                    } catch (NumberFormatException e) {
+                        Asserts.fail("提醒方式必须是英文逗号分隔的渠道编码");
+                        return;
+                    }
+                    if (code != RemindWayEnum.EMAIL.getCode() && code != RemindWayEnum.DING_DING.getCode()) {
+                        Asserts.fail("当前仅支持邮箱和钉钉提醒");
+                    }
+                }
+            }
         }
     }
 

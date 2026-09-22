@@ -62,8 +62,8 @@ public class PushMessageScheduler {
         }
 
         List<MsgPushWayBO> pushWayList = msgPushWayRepository.listAll();
-        Map<RemindWayEnum, MsgPushWayBO.WayBO> wayBOMap = pushWayList.stream()
-                .collect(Collectors.toMap(MsgPushWayBO::getPushType, MsgPushWayBO::getPushRequestParam));
+        Map<RemindWayEnum, List<MsgPushWayBO>> wayBOMap = pushWayList.stream()
+                .collect(Collectors.groupingBy(MsgPushWayBO::getPushType));
 
         for (MsgPushTaskBO taskBO : taskBOList) {
             try {
@@ -80,12 +80,18 @@ public class PushMessageScheduler {
     /**
      * 处理单条推送任务，匹配推送渠道并发送消息。
      */
-    private void dealWithData(MsgPushTaskBO taskBO, Map<RemindWayEnum, MsgPushWayBO.WayBO> wayBOMap) {
+    private void dealWithData(MsgPushTaskBO taskBO, Map<RemindWayEnum, List<MsgPushWayBO>> wayBOMap) {
         RemindWayEnum msgType = taskBO.getMsgType();
-        MsgPushWayBO.WayBO wayBO = wayBOMap.get(msgType);
+        List<MsgPushWayBO> wayBOList = wayBOMap.get(msgType);
+        if (CollectionUtil.isEmpty(wayBOList)) {
+            throw new IllegalStateException("推送消息没有读取到推送配置: " + msgType);
+        }
+        if (wayBOList.size() > 1) {
+            throw new IllegalStateException("推送配置重复: " + msgType);
+        }
+        MsgPushWayBO.WayBO wayBO = wayBOList.get(0).getPushRequestParam();
         if (Objects.isNull(wayBO)) {
-            log.error("推送消息没有读取到推送配置, msg={}", JSONUtil.toJsonStr(msgType));
-            return;
+            throw new IllegalStateException("推送消息没有读取到推送配置: " + msgType);
         }
 
         AbstractMessageNotifyFactory notifyFactory = messageNotifyComponent.getByRemindWay(msgType);

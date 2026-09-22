@@ -69,7 +69,6 @@ public class DingDingPushClient {
             instance.init(new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), DEFAULT_ALGORITHM));
             byte[] signData = instance.doFinal(toSign.getBytes(StandardCharsets.UTF_8));
             String sign = URLEncoder.encode(Base64.getEncoder().encodeToString(signData), "UTF-8");
-            log.info("生成签名: timestamp={},secret={},sign={}", timestamp, secret, sign);
             return sign;
         } catch (Exception e) {
             return null;

@@ -18,14 +18,14 @@ public class CountdownNotifyFactory extends AbstractNotifyFactory {
     @Override
     public NotifyBO analyzeIsNotify(LocalDate notifyDate, String remindTimes) {
         LocalDate now = LocalDate.now();
-        if (notifyDate.isAfter(now)) {
+        if (notifyDate.isBefore(now)) {
             return new NotifyBO(false, MINUS_ONE_LONG);
         }
 
         if (notifyDate.isEqual(now)) {
             return new NotifyBO(true, ZERO_LONG);
         }
-        long intervalDays = notifyDate.until(now, ChronoUnit.DAYS);
+        long intervalDays = now.until(notifyDate, ChronoUnit.DAYS);
         for (String day : remindTimes.split(StrUtil.COMMA)) {
             if (NumberUtils.compare(intervalDays, Long.parseLong(day)) == ZERO_INT) {
                 return new NotifyBO(true, intervalDays);
