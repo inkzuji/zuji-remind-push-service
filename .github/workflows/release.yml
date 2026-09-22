@@ -126,11 +126,14 @@ jobs:
           image="$IMAGE_NAME@$IMAGE_DIGEST"
           docker buildx imagetools inspect "$image" --raw > "$RUNNER_TEMP/image-manifest.json"
           for arch in amd64 arm64; do
-            jq -e --arg arch "$arch" \
-              '.manifests | any(.platform.os == "linux" and .platform.architecture == $arch)' \
-              "$RUNNER_TEMP/image-manifest.json"
-            docker pull --platform "linux/$arch" "$image"
-            container=$(docker create --platform "linux/$arch" "$image")
+            # 按架构使用子 manifest digest，避免本地镜像存储覆盖同一清单 digest。
+            platform_digest=$(jq -er --arg arch "$arch" \
+              '[.manifests[] | select(.platform.os == "linux" and .platform.architecture == $arch) | .digest] |
+               if length == 1 then .[0] else error("expected one manifest for linux/" + $arch) end' \
+              "$RUNNER_TEMP/image-manifest.json")
+            platform_image="$IMAGE_NAME@$platform_digest"
+            docker pull --platform "linux/$arch" "$platform_image"
+            container=$(docker create --platform "linux/$arch" "$platform_image")
             docker cp "$container:/app/app.jar" "$RUNNER_TEMP/image-$arch.jar"
             docker rm "$container"
             cmp "release-assets/zuji-remind-push-biz-$VERSION.jar" "$RUNNER_TEMP/image-$arch.jar"
