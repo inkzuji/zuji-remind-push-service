@@ -49,7 +49,7 @@ public class AnniversaryEventFactory extends AbstractEventFactory {
         if (calculateResultBO.getIntervalDays() > ZERO_LONG) {
             bf.append("<p>已经").append(calculateResultBO.getRecordDate().until(LocalDate.now(), ChronoUnit.DAYS)).append("天了！</p>");
         } else {
-            bf.append("<p>").append(calculateResultBO.getRecordDate().until(LocalDate.now(), ChronoUnit.DAYS)).append("周年快乐！</p>");
+            bf.append("<p>").append(calculateResultBO.getRecordDate().until(LocalDate.now(), ChronoUnit.YEARS)).append("周年快乐！</p>");
         }
         if (StringUtils.isNotBlank(originalDB.getTaskDesc())) {
             bf.append("<p>").append(originalDB.getTaskDesc()).append("</p>");

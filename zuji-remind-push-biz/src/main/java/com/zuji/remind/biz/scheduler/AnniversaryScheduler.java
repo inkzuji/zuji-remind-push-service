@@ -53,7 +53,11 @@ public class AnniversaryScheduler {
         }
         List<AggreNotifyBO> notifyList = new ArrayList<>();
         for (MemorialDayTask dayTask : memorialDayTaskList) {
-            this.dealWithData(dayTask, notifyList);
+            try {
+                this.dealWithData(dayTask, notifyList);
+            } catch (Exception e) {
+                log.error("纪念日任务处理失败, taskId={}", dayTask.getId(), e);
+            }
         }
         this.saveSendMsg(notifyList);
         log.info("纪念日定时任务执行完成");

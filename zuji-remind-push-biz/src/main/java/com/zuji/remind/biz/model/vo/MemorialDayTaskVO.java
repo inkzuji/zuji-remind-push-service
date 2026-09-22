@@ -54,7 +54,7 @@ public class MemorialDayTaskVO {
         private String memorialDate;
 
         /**
-         * 是否提醒: 0=提醒; 1=不提醒;
+         * 是否提醒: 0=不提醒; 1=提醒;
          */
         private Integer statusRemind;
 
@@ -73,6 +73,7 @@ public class MemorialDayTaskVO {
                 Asserts.fail(ResultCode.VALIDATE_FAILED);
             }
             TaskVO taskVO = new TaskVO();
+            taskVO.setId(task.getId());
             taskVO.setEventType(task.getEventType());
             taskVO.setName(task.getName());
             taskVO.setTaskDesc(task.getTaskDesc());

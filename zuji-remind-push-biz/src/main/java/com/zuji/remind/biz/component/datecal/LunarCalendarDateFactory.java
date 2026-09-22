@@ -32,14 +32,16 @@ public class LunarCalendarDateFactory extends AbstractDateFactory {
     public DateBO calculateNextDate(String storageDate, boolean isLeapMonth) {
         LocalDate now = LocalDate.now();
         String[] dates = storageDate.split(StrUtil.DASHED);
-        ChineseDate storageChineseDate = new ChineseDate(Integer.parseInt(dates[0]), Integer.parseInt(dates[1]), Integer.parseInt(dates[2]), isLeapMonth);
+        int month = Integer.parseInt(dates[1]);
+        int day = Integer.parseInt(dates[2]);
         int chineseYear = new ChineseDate(now).getChineseYear();
 
-        ChineseDate nextNotifyChineseDate = new ChineseDate(chineseYear, storageChineseDate.getMonth(), storageChineseDate.getDay());
+        // 每年提醒一次；目标年没有对应闰月时，四参数构造器按同名普通月计算。
+        ChineseDate nextNotifyChineseDate = new ChineseDate(chineseYear, month, day, isLeapMonth);
         LocalDate nextNotifyLocalDate = DateUtil.toLocalDateTime(nextNotifyChineseDate.getGregorianDate()).toLocalDate();
         // 如果日期已经过了，则计算下个日期
         if (nextNotifyLocalDate.isBefore(now)) {
-            nextNotifyChineseDate = new ChineseDate(chineseYear + 1, nextNotifyChineseDate.getMonth(), nextNotifyChineseDate.getDay());
+            nextNotifyChineseDate = new ChineseDate(chineseYear + 1, month, day, isLeapMonth);
             nextNotifyLocalDate = DateUtil.toLocalDateTime(nextNotifyChineseDate.getGregorianDate()).toLocalDate();
         }
         return new DateBO(nextNotifyLocalDate, nextNotifyChineseDate);
