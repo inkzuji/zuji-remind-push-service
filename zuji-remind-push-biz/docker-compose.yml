@@ -1,0 +1,66 @@
+services:
+  remind-push:
+    image: ghcr.io/inkzuji/zuji-remind-push-biz:latest
+    build:
+      context: ..
+      dockerfile: zuji-remind-push-biz/docker/Dockerfile
+    container_name: remind-push
+    restart: unless-stopped
+    stop_grace_period: 40s
+    ports:
+      - "${APP_PORT:-18080}:8080"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /data/docker/service/zuji-remind-push-biz/logs:/logs
+    environment:
+      JAVA_TOOL_OPTIONS: -Xmx512m -Dfile.encoding=UTF8 -Duser.timezone=GMT+08
+      TZ: Asia/Shanghai
+      SERVER_SERVLET_CONTEXT_PATH: /remind-push
+      SPRING_PROFILES_ACTIVE: prd
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/zuji_remind?useSSL=false&allowPublicKeyRetrieval=true&autoReconnect=true&characterEncoding=utf8
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME:-root}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD:?请在 .env 中设置数据库密码 MYSQL_ROOT_PASSWORD}
+      SPRING_MAIL_HOST: ${SPRING_MAIL_HOST:-smtp.qq.com}
+      SPRING_MAIL_PORT: ${SPRING_MAIL_PORT:-465}
+      SPRING_MAIL_USERNAME: ${SPRING_MAIL_USERNAME:?请在 .env 中设置发件邮箱 SPRING_MAIL_USERNAME}
+      SPRING_MAIL_PASSWORD: ${SPRING_MAIL_PASSWORD:?请在 .env 中设置邮箱授权码 SPRING_MAIL_PASSWORD}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      custom-network:
+        ipv4_address: 172.20.0.10
+
+  mysql:
+    image: mysql:8
+    container_name: mysql
+    restart: unless-stopped
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    volumes:
+      - /data/docker/mysql/conf:/etc/mysql/conf.d
+      - /data/docker/mysql/log:/var/log/mysql
+      - /data/docker/mysql/data:/var/lib/mysql
+      - ./db:/docker-entrypoint-initdb.d:ro
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?请在 .env 中设置数据库密码 MYSQL_ROOT_PASSWORD}
+      MYSQL_ROOT_HOST: "%"
+      MYSQL_DATABASE: zuji_remind
+      TZ: Asia/Shanghai
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test: ["CMD-SHELL", "MYSQL_PWD=\"$${MYSQL_ROOT_PASSWORD}\" mysql --protocol=TCP -h127.0.0.1 -uroot \"$${MYSQL_DATABASE}\" -e 'SELECT 1'"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+    networks:
+      custom-network:
+        ipv4_address: 172.20.0.2
+
+networks:
+  custom-network:
+    external: true
+    name: custom-network
