@@ -1,0 +1,179 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+# 所有版本共享发布队列，避免并发更新 latest；不取消正在执行的发布。
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: write
+      packages: write
+    defaults:
+      run:
+        shell: bash
+    env:
+      IMAGE_NAME: ghcr.io/inkzuji/zuji-remind-push-biz
+      RELEASE_TAG: ${{ github.ref_name }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Validate release tag
+        run: |
+          if [[ ! "$RELEASE_TAG" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
+            echo "::error::正式版本标签必须为 vX.Y.Z，且版本号不能含前导零"
+            exit 1
+          fi
+
+      - name: Set up Java
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+
+      - name: Validate Maven version
+        id: version
+        run: |
+          mvn --batch-mode --no-transfer-progress help:evaluate \
+            -Dexpression=project.version -Doutput="$RUNNER_TEMP/project-version" -N
+          version=$(cat "$RUNNER_TEMP/project-version")
+          if [[ "$RELEASE_TAG" != "v$version" ]]; then
+            echo "::error::标签 $RELEASE_TAG 与 Maven 版本 $version 不一致"
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Reject an existing release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # API 错误必须终止发布，不能把权限或网络错误当成 Release 不存在。
+          gh api --paginate "repos/$GITHUB_REPOSITORY/releases" \
+            --jq '.[].tag_name' > "$RUNNER_TEMP/release-tags"
+          if grep -Fxq -- "$RELEASE_TAG" "$RUNNER_TEMP/release-tags"; then
+            echo "::error::Release $RELEASE_TAG 已存在（包括草稿），停止发布以避免覆盖"
+            exit 1
+          fi
+
+      - name: Build and test
+        run: |
+          # 仅排除依赖完整 Spring / 数据库环境的两个测试类。
+          mvn --batch-mode --no-transfer-progress clean verify \
+            -pl zuji-remind-push-biz -am \
+            '-Dtest=!BaseTests,!AnniversarySchedulerTest' \
+            -Dsurefire.failIfNoSpecifiedTests=false
+
+      - name: Preserve test reports
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-reports-${{ github.ref_name }}-${{ github.run_attempt }}
+          path: '**/target/surefire-reports/'
+          if-no-files-found: ignore
+
+      - name: Prepare release assets
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          mkdir -p release-assets
+          cp "zuji-remind-push-biz/target/zuji-remind-push-biz-$VERSION.jar" release-assets/
+          cd release-assets
+          sha256sum "zuji-remind-push-biz-$VERSION.jar" > SHA256SUMS
+          sha256sum --check SHA256SUMS
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v4
+        with:
+          platforms: arm64
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
+      - name: Build and push image
+        id: image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: zuji-remind-push-biz/docker/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}
+            ${{ env.IMAGE_NAME }}:latest
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.version=${{ steps.version.outputs.version }}
+            org.opencontainers.image.revision=${{ github.sha }}
+
+      - name: Verify published image
+        env:
+          IMAGE_DIGEST: ${{ steps.image.outputs.digest }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          image="$IMAGE_NAME@$IMAGE_DIGEST"
+          docker buildx imagetools inspect "$image" --raw > "$RUNNER_TEMP/image-manifest.json"
+          for arch in amd64 arm64; do
+            jq -e --arg arch "$arch" \
+              '.manifests | any(.platform.os == "linux" and .platform.architecture == $arch)' \
+              "$RUNNER_TEMP/image-manifest.json"
+            docker pull --platform "linux/$arch" "$image"
+            container=$(docker create --platform "linux/$arch" "$image")
+            docker cp "$container:/app/app.jar" "$RUNNER_TEMP/image-$arch.jar"
+            docker rm "$container"
+            cmp "release-assets/zuji-remind-push-biz-$VERSION.jar" "$RUNNER_TEMP/image-$arch.jar"
+          done
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          IMAGE_DIGEST: ${{ steps.image.outputs.digest }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          cat > "$RUNNER_TEMP/release-notes.md" <<EOF
+          ## Docker 镜像
+
+          支持 linux/amd64 和 linux/arm64。
+
+          \`\`\`bash
+          docker pull $IMAGE_NAME:$VERSION
+          docker pull $IMAGE_NAME@$IMAGE_DIGEST
+          \`\`\`
+
+          镜像 digest：\`$IMAGE_DIGEST\`
+
+          ## JAR 附件
+
+          使用 Java 25 运行；下载 JAR 和 SHA256SUMS 到同一目录后执行：
+
+          \`\`\`bash
+          sha256sum --check SHA256SUMS
+          \`\`\`
+          EOF
+          gh release create "$RELEASE_TAG" \
+            "release-assets/zuji-remind-push-biz-$VERSION.jar" \
+            release-assets/SHA256SUMS \
+            --repo "$GITHUB_REPOSITORY" \
+            --verify-tag --title "$RELEASE_TAG" \
+            --generate-notes --notes-file "$RUNNER_TEMP/release-notes.md"
