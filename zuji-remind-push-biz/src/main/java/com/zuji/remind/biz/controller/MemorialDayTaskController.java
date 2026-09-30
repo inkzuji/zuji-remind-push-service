@@ -4,6 +4,7 @@ import com.zuji.remind.biz.dao.entity.MemorialDayTask;
 import com.zuji.remind.biz.model.dto.MemorialDayTaskDTO;
 import com.zuji.remind.biz.model.vo.MemorialDayTaskVO;
 import com.zuji.remind.biz.repository.MemorialDayTaskRepository;
+import com.zuji.remind.biz.scheduler.AnniversaryScheduler;
 import com.zuji.remind.common.api.CommonResult;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -22,9 +23,21 @@ import java.util.stream.Collectors;
 @RestController
 public class MemorialDayTaskController {
     private final MemorialDayTaskRepository memorialDayTaskRepository;
+    private final AnniversaryScheduler anniversaryScheduler;
 
-    public MemorialDayTaskController(MemorialDayTaskRepository memorialDayTaskRepository) {
+    public MemorialDayTaskController(MemorialDayTaskRepository memorialDayTaskRepository,
+                                     AnniversaryScheduler anniversaryScheduler) {
         this.memorialDayTaskRepository = memorialDayTaskRepository;
+        this.anniversaryScheduler = anniversaryScheduler;
+    }
+
+    /**
+     * 手动触发纪念日定时任务，成功响应表示已提交执行，不代表消息已推送。
+     */
+    @PostMapping(value = "/trigger")
+    public CommonResult<Void> trigger() {
+        anniversaryScheduler.task();
+        return CommonResult.success();
     }
 
     /**

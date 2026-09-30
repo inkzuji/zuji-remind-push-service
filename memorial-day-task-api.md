@@ -39,6 +39,7 @@
 | 新增任务 | `POST` | `/api/memorialDay/add` | `null` |
 | 修改任务 | `PUT` | `/api/memorialDay/{id}` | `null` |
 | 删除任务 | `DELETE` | `/api/memorialDay/{id}` | `null` |
+| 手动触发定时任务 | `POST` | `/api/memorialDay/trigger` | `null` |
 
 ## 4. 请求模型
 
@@ -175,6 +176,22 @@
 
 - 业务行为：按 `id` 删除任务；影响行数为 `1` 时返回成功，否则返回失败。
 - `MemorialDayTask.isDelete` 使用 MyBatis-Plus `@TableLogic(value = "0", delval = "1")`，因此删除行为通常表现为逻辑删除。
+
+### 6.6 手动触发定时任务
+
+- 方法：`POST`
+- 路径：`/api/memorialDay/trigger`
+- 请求参数、请求体：无
+- 业务行为：调用 `AnniversaryScheduler.task()`，按当前日期和已有提醒规则扫描全部任务（生日、纪念日、倒计时），生成待推送消息。
+- 执行方式：复用现有 `commonThreadPoolExecutor` 异步执行；线程池饱和时按已有 `CallerRunsPolicy` 在请求线程执行。
+- 成功响应：`{"code":200,"message":"操作成功","data":null}`，表示触发已提交，不代表任务全部处理成功或消息已发送；执行情况查看服务日志。消息由原有 `PushMessageScheduler` 每 5 分钟扫描发送。
+- 重复调用会重复执行扫描，可能生成重复通知；手动触发不改变每天 09:00 的自动执行计划。
+
+调用示例（包含默认 context path）：
+
+```bash
+curl -X POST 'http://localhost:8080/remind-push/api/memorialDay/trigger'
+```
 
 ## 7. 注意事项
 

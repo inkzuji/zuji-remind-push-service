@@ -3,7 +3,9 @@ package com.zuji.remind.biz.controller;
 import com.zuji.remind.biz.dao.entity.MemorialDayTask;
 import com.zuji.remind.biz.model.dto.MemorialDayTaskDTO.SaveTaskDTO;
 import com.zuji.remind.biz.repository.MemorialDayTaskRepository;
+import com.zuji.remind.biz.scheduler.AnniversaryScheduler;
 import com.zuji.remind.common.exception.ApiException;
+import com.zuji.remind.common.exception.GlobalExceptionHandler;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
@@ -15,10 +17,53 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.setup.MockMvcBuilders.standaloneSetup;
 
 class MemorialDayTaskControllerTest {
     private final MemorialDayTaskRepository repository = mock(MemorialDayTaskRepository.class);
-    private final MemorialDayTaskController controller = new MemorialDayTaskController(repository);
+    private final AnniversaryScheduler scheduler = mock(AnniversaryScheduler.class);
+    private final MemorialDayTaskController controller = new MemorialDayTaskController(repository, scheduler);
+
+    @Test
+    void triggerSubmitsSchedulerWithoutRequestBody() throws Exception {
+        standaloneSetup(controller).build()
+                .perform(post("/api/memorialDay/trigger"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(200))
+                .andExpect(jsonPath("$.message").value("操作成功"))
+                .andExpect(jsonPath("$.data").isEmpty());
+
+        verify(scheduler).task();
+        verifyNoMoreInteractions(scheduler);
+        verifyNoInteractions(repository);
+    }
+
+    @Test
+    void getDoesNotTriggerScheduler() throws Exception {
+        standaloneSetup(controller).build()
+                .perform(get("/api/memorialDay/trigger"))
+                .andExpect(status().isMethodNotAllowed());
+
+        verifyNoInteractions(scheduler, repository);
+    }
+
+    @Test
+    void triggerSubmissionFailureUsesGlobalErrorResponse() throws Exception {
+        doThrow(new IllegalStateException("任务提交失败")).when(scheduler).task();
+
+        standaloneSetup(controller).setControllerAdvice(new GlobalExceptionHandler()).build()
+                .perform(post("/api/memorialDay/trigger"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(500))
+                .andExpect(jsonPath("$.message").value("任务提交失败"));
+
+        verify(scheduler).task();
+        verifyNoInteractions(repository);
+    }
 
     @Test
     void listAndDetailReturnTaskId() {
