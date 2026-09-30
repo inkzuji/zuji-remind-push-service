@@ -3,6 +3,7 @@ package com.zuji.remind.biz.config;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
@@ -17,6 +18,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 @Data
 @Slf4j
 @Component
+@EnableScheduling
 public class ExecutorConfig {
     private static final int DEFAULT_EXECUTOR_CORE_SIZE = 5;
     private static final int DEFAULT_EXECUTOR_MAX_SIZE = 5;
