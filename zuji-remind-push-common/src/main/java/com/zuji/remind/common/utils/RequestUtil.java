@@ -1,6 +1,9 @@
 package com.zuji.remind.common.utils;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
@@ -11,6 +14,8 @@ import java.net.UnknownHostException;
  * @create 2023-09-22 23:33
  **/
 public class RequestUtil {
+    private static final Logger LOGGER = LoggerFactory.getLogger(RequestUtil.class);
+
     private RequestUtil() {
     }
 
@@ -30,13 +35,11 @@ public class RequestUtil {
             ipAddress = request.getRemoteAddr();
             // 从本地访问时根据网卡取本机配置的IP
             if (ipAddress.equals("127.0.0.1") || ipAddress.equals("0:0:0:0:0:0:0:1")) {
-                InetAddress inetAddress = null;
                 try {
-                    inetAddress = InetAddress.getLocalHost();
+                    ipAddress = InetAddress.getLocalHost().getHostAddress();
                 } catch (UnknownHostException e) {
-                    e.printStackTrace();
+                    LOGGER.warn("获取本机IP失败，保留请求地址：{}", ipAddress, e);
                 }
-                ipAddress = inetAddress.getHostAddress();
             }
         }
         // 通过多个代理转发的情况，第一个IP为客户端真实IP，多个IP会按照','分割

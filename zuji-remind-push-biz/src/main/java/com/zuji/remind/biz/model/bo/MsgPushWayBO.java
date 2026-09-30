@@ -33,6 +33,11 @@ public class MsgPushWayBO implements Serializable {
      */
     private MsgPushWayBO.WayBO pushRequestParam;
 
+    /**
+     * 配置解析失败时保留渠道信息，由对应推送任务记录失败并重试。
+     */
+    private boolean parseFailed;
+
     @Data
     public abstract static class WayBO implements Serializable {
         @Serial
@@ -80,7 +85,11 @@ public class MsgPushWayBO implements Serializable {
         MsgPushWayBO wayBO = new MsgPushWayBO();
         wayBO.setPushType(remindWayEnum);
         wayBO.setName(way.getName());
-        wayBO.setPushRequestParam(convert(remindWayEnum, way.getPushContext()));
+        try {
+            wayBO.setPushRequestParam(convert(remindWayEnum, way.getPushContext()));
+        } catch (RuntimeException e) {
+            wayBO.setParseFailed(true);
+        }
         return wayBO;
     }
 

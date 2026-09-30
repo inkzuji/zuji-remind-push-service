@@ -1,6 +1,7 @@
 package com.zuji.remind.biz.service.factory;
 
 import com.zuji.remind.biz.component.datecal.AbstractDateFactory;
+import com.zuji.remind.biz.enums.DateTypeEnum;
 import com.zuji.remind.biz.model.bo.EventContextBO;
 import com.zuji.remind.biz.utils.DateUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -49,7 +50,7 @@ public class AnniversaryEventFactory extends AbstractEventFactory {
         if (calculateResultBO.getIntervalDays() > ZERO_LONG) {
             bf.append("<p>已经").append(calculateResultBO.getRecordDate().until(LocalDate.now(), ChronoUnit.DAYS)).append("天了！</p>");
         } else {
-            bf.append("<p>").append(calculateResultBO.getRecordDate().until(LocalDate.now(), ChronoUnit.YEARS)).append("周年快乐！</p>");
+            bf.append("<p>").append(calculateAnniversaryYears(contextBO)).append("周年快乐！</p>");
         }
         if (StringUtils.isNotBlank(originalDB.getTaskDesc())) {
             bf.append("<p>").append(originalDB.getTaskDesc()).append("</p>");
@@ -69,11 +70,20 @@ public class AnniversaryEventFactory extends AbstractEventFactory {
         if (calculateResultBO.getIntervalDays() > ZERO_LONG) {
             list.add(String.format("已经**%d**天了！", calculateResultBO.getRecordDate().until(LocalDate.now(), ChronoUnit.DAYS)));
         } else {
-            list.add(String.format("%d周年快乐！", calculateResultBO.getRecordDate().until(LocalDate.now(), ChronoUnit.YEARS)));
+            list.add(String.format("%d周年快乐！", calculateAnniversaryYears(contextBO)));
         }
         if (StringUtils.isNotBlank(originalDB.getTaskDesc())) {
             list.add(String.format("> %s", originalDB.getTaskDesc()));
         }
         return StringUtils.join(list, "  \n  ");
+    }
+
+    private long calculateAnniversaryYears(EventContextBO contextBO) {
+        EventContextBO.CalculateResultBO calculateResultBO = contextBO.getCalculateResultBO();
+        if (contextBO.getOriginalDB().getDateType() == DateTypeEnum.LUNAR_CALENDAR) {
+            return calculateResultBO.getThisYearChineseDate().getChineseYear()
+                    - calculateResultBO.getRecordChineseDate().getChineseYear();
+        }
+        return calculateResultBO.getRecordDate().until(LocalDate.now(), ChronoUnit.YEARS);
     }
 }

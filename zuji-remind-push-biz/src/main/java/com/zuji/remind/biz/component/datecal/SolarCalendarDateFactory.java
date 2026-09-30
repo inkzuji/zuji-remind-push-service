@@ -7,7 +7,6 @@ import com.zuji.remind.biz.enums.DateTypeEnum;
 import java.time.LocalDate;
 
 import static com.zuji.remind.common.constant.CommonConstant.DEFAULT_DATE_FORMAT;
-import static com.zuji.remind.common.constant.CommonConstant.ONE_LONG;
 
 /**
  * 阳历日期服务实现.
@@ -37,7 +36,7 @@ public class SolarCalendarDateFactory extends AbstractDateFactory {
 
         // 如果今年通知日期已经过了
         if (nextLocalDate.isBefore(now)) {
-            nextLocalDate = nextLocalDate.plusYears(ONE_LONG);
+            nextLocalDate = storageLocalDate.withYear(now.getYear() + 1);
         }
         ChineseDate chineseDate = new ChineseDate(nextLocalDate);
         return new DateBO(nextLocalDate, chineseDate);

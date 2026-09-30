@@ -51,7 +51,7 @@
 | `taskDesc` | `String` | 否 | 无 | 描述 |
 | `dateType` | `Integer` | 是 | `1..2` | 日期类型：`1=阳历`，`2=农历` |
 | `isLeapMonth` | `Integer` | 否 | 约定值 `0/1` | 是否闰月：`0=否`，`1=是` |
-| `memorialDate` | `String` | 是 | 非空字符串 | 日期；具体格式代码中未约束 |
+| `memorialDate` | `String` | 是 | 非空字符串 | 按 `dateType` 对应历法填写 `yyyy-MM-dd`；调用方保证日期真实有效 |
 | `statusRemind` | `Integer` | 是 | `0..1` | 是否提醒；含义见「注意事项」 |
 | `remindTimes` | `String` | 否 | 无 | 提醒频率；具体格式代码中未约束 |
 | `remindWay` | `String` | 否 | 代码注释约定 `1/2/3` | 提醒方式：`1=邮箱`，`2=钉钉`，`3=微信` |
@@ -180,6 +180,12 @@
 
 1. `statusRemind` 注释存在冲突：DTO/VO 写的是 `0=提醒;1=不提醒`，Entity 写的是 `0=不提醒;1=提醒`。接口文档暂不把该字段含义定死，建议统一代码注释或补充枚举。
 2. `TaskVO` 声明了 `id` 字段，但 `TaskVO.from(MemorialDayTask)` 当前没有设置 `id`，实际响应中的 `id` 可能为 `null`。
-3. `memorialDate`、`remindTimes`、`remindWay` 的具体格式没有在 Controller/DTO 校验注解中约束。
+3. `memorialDate` 使用 `yyyy-MM-dd`，农历日期配合 `isLeapMonth` 表示普通月或闰月；保存前由调用方保证日期真实有效，Controller/DTO 仅校验该字段非空。`remindTimes`、`remindWay` 的具体格式没有在 Controller/DTO 校验注解中约束。
 4. 当前 Controller 内没有显式鉴权注解；如果项目通过网关、Filter、Interceptor 或 Spring Security 全局处理鉴权，需要以全局配置为准。
 5. 本文档路径未包含可能存在的 servlet context path、网关前缀或版本前缀。
+
+### 逐年提醒规则
+
+- 阳历二月二十九在平年按二月二十八提醒，在闰年恢复为二月二十九。
+- 农历闰月日期在目标年没有同名闰月时，按同名普通月提醒；确定实际月份后，若原始日期为三十而目标月只有二十九天，按二十九提醒。之后遇到大月仍按原始三十计算，不修改保存的日期。
+- 农历纪念日当天的周年数按本次纪念日农历年份减去原始农历年份计算；非纪念日当天的“已经多少天”仍使用阳历日期的实际天数差。

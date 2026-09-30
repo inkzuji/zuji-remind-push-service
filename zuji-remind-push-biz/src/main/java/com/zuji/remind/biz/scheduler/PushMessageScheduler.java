@@ -89,7 +89,11 @@ public class PushMessageScheduler {
         if (wayBOList.size() > 1) {
             throw new IllegalStateException("推送配置重复: " + msgType);
         }
-        MsgPushWayBO.WayBO wayBO = wayBOList.get(0).getPushRequestParam();
+        MsgPushWayBO pushWayBO = wayBOList.get(0);
+        if (pushWayBO.isParseFailed()) {
+            throw new IllegalStateException("推送配置解析失败: " + msgType);
+        }
+        MsgPushWayBO.WayBO wayBO = pushWayBO.getPushRequestParam();
         if (Objects.isNull(wayBO)) {
             throw new IllegalStateException("推送消息没有读取到推送配置: " + msgType);
         }
